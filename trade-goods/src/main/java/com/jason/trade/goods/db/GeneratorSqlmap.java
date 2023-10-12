@@ -33,7 +33,7 @@ public class GeneratorSqlmap {
         //指定逆向的配置文件地址
         File configFile = new File("trade-goods/src/main/resources/mybatis-generator-config.xml");
         List<String> warningInfos = new ArrayList<String>();
-
+    
         DefaultShellCallback callback = new DefaultShellCallback(true);
         ConfigurationParser configurationParser = new ConfigurationParser(warningInfos);
         Configuration config = configurationParser.parseConfiguration(configFile);
