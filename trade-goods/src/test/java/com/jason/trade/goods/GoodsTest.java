@@ -31,6 +31,7 @@ public class GoodsTest {
         goods.setLockStock(10000);
         goods.setPrice(999999);
         goods.setStatus(1);
+        goods.setAvailableStock(5);
         boolean insertResult = goodsDao.insertGoods(goods);
         System.out.println(insertResult);
 
@@ -50,7 +51,7 @@ public class GoodsTest {
 
     @Test
     public void updateGoods() {
-        Goods goods = goodsDao.queryGoodsById(2);
+        Goods goods = goodsDao.queryGoodsById(16);
         goods.setTitle(goods.getTitle() + " update");
         goodsDao.updateGoods(goods);
     }
