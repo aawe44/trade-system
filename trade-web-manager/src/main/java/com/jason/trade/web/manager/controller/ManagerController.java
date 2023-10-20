@@ -51,9 +51,7 @@ public class ManagerController {
         goods.setKeywords(keywords);
         goods.setCategory(category);
         goods.setAvailableStock(stock);
-        //初始为上架状态
         goods.setStatus(1);
-        //初始的销售数量为0
         goods.setSaleNum(0);
         goods.setCreateTime(new Date());
         boolean result = goodsService.insertGoods(goods);
