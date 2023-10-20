@@ -20,22 +20,12 @@ public class PortalController {
     @Autowired
     private GoodsService goodsService;
 
-    /**
-     * 跳转到主页面
-     *
-     * @return
-     */
     @RequestMapping("/goods_detail")
     public String index() {
         return "goods_detail";
     }
 
-    /**
-     * 商品详情页
-     *
-     * @param goodsId
-     * @return
-     */
+
     @RequestMapping("/goods/{goodsId}")
     public ModelAndView itemPage(@PathVariable long goodsId) {
         Goods goods = goodsService.queryGoodsById(goodsId);
@@ -48,12 +38,7 @@ public class PortalController {
         return modelAndView;
     }
 
-    /**
-     * 购买请求处理
-     * @param userId
-     * @param goodsId
-     * @return
-     */
+
     @RequestMapping("/buy/{userId}/{goodsId}")
     public ModelAndView buy(@PathVariable long userId, @PathVariable long goodsId) {
 
