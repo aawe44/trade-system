@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=EmulateIE7" />
+	<title>产品列表页</title>
+	 <link rel="icon" href="./img/favicon.ico">
+	
+
+    <link rel="stylesheet" type="text/css" href="/search/all.css" />
+    <link rel="stylesheet" type="text/css" href="/search/pages-list.css" />
+</head>
+
+<body>
+	<!-- 头部栏位 -->
+	<!--页面顶部-->
+<div id="nav-bottom">
+
+		<!--头部-->
+		<div class="header">
+			<div class="py-container">
+				<div class="yui3-g Logo">
+					<div class="yui3-u Rit searchArea">
+						<div class="search">
+							<form action="" class="sui-form form-inline" th:action="@{/searchAction}" method="post">
+								<!--searchAutoComplete-->
+								<div class="input-append">
+									<input type="text" id="searchWords"  name="searchWords" class="input-error input-xxlarge" />
+									<button class="sui-btn btn-xlarge btn-danger" >Search</button>
+								</div>
+							</form>
+						</div>
+					</div>
+
+				</div>
+
+			</div>
+		</div>
+	</div>
+</div>
+
+	<!--list-content-->
+	<div class="main">
+		<div class="py-container">
+			<!--selector-->
+			<!--details-->
+			<div class="details">
+				<div class="goods-list">
+					<ul class="yui3-g">
+
+						<li class="yui3-u-1-5" th:each="goods:${goodsList}">
+							<div class="list-wrap">
+								<div class="p-img">
+									<a  th:href="'/goods/' + ${goods.getId()}"  target="_blank"><img src="/search/mobile1.jpeg" /></a>
+								</div>
+								<div class="price">
+									<strong>
+											<em>$</em>
+											<i th:text="${goods.getPrice()/100}"></i>
+										</strong>
+								</div>
+								<div class="attr">
+									<a target="_blank"   th:href="'/goods/' + ${goods.getId()}" th:text="${goods.getTitle()}"></a>
+								</div>
+								<div class="commit">
+									<i class="command">sold <span  th:text="${goods.getSaleNum()}"></span> pieces</i>
+								</div>
+							</div>
+						</li>
+					</ul>
+				</div>
+				<div class="fr page">
+					<div class="sui-pagination pagination-large">
+						<ul>
+							<li class="prev disabled">
+								<a href="#">«上一页</a>
+							</li>
+							<li class="active">
+								<a href="#">1</a>
+							</li>
+							<li>
+								<a href="#">2</a>
+							</li>
+							<li>
+								<a href="#">3</a>
+							</li>
+							<li>
+								<a href="#">4</a>
+							</li>
+							<li>
+								<a href="#">5</a>
+							</li>
+							<li class="dotted"><span>...</span></li>
+							<li class="next">
+								<a href="#">下一页»</a>
+							</li>
+						</ul>
+						<div><span>共10页&nbsp;</span><span>
+      到第
+      <input type="text" class="page-num">
+      页 <button class="page-confirm" onclick="alert(1)">确定</button></span></div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+<script type="text/javascript" src="/search/all.js"></script>
+</body>
+
+</html>
