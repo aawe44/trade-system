@@ -1,7 +1,9 @@
 package com.jason.trade.goods;
 
 import com.alibaba.fastjson.JSON;
+import com.jason.trade.goods.db.model.Goods;
 import com.jason.trade.goods.model.Person;
+import com.jason.trade.goods.service.SearchService;
 import org.apache.http.HttpHost;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
@@ -34,6 +36,9 @@ public class EsSearchTest {
 
     @Autowired
     private RestHighLevelClient client;
+
+    @Autowired
+    private SearchService searchService;
 
 
     public void contextLoads() {
@@ -198,5 +203,34 @@ public class EsSearchTest {
                 .collect(Collectors.toList());
 
         System.out.println(JSON.toJSONString(personList));
+    }
+
+    @Test
+    public void addGoodsToES() {
+        Goods goods = createSampleGoods();
+        searchService.addGoodsToES(goods);
+    }
+
+    private Goods createSampleGoods() {
+        Goods goods = new Goods();
+        goods.setTitle("mate50 pro");
+        goods.setBrand("HuaWei");
+        goods.setCategory("cell phone");
+        goods.setNumber("NO12360");
+        goods.setImage("test");
+        goods.setDescription("HuaWei mate50 Carbon Black 8G+256G");
+        goods.setKeywords("HuaWei mate50 cellphone Carbon Black");
+        goods.setSaleNum(58);
+        goods.setAvailableStock(10000);
+        goods.setPrice(899999);
+        goods.setStatus(1);
+        goods.setId(25L);
+        return goods;
+    }
+
+    @Test
+    public void goodsSearch() {
+        List<Goods> goodsList = searchService.searchGoodsList("Carbon Black", 0, 10);
+        System.out.println(JSON.toJSONString(goodsList));
     }
 }
