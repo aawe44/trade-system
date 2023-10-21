@@ -163,15 +163,14 @@ public class EsSearchTest {
     }
 
 
-
     @Test
-    public void  queryMatch() throws IOException {
+    public void queryMatch() throws IOException {
 
         SearchRequest searchRequest = new SearchRequest("person");
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
 
-        WildcardQueryBuilder queryBuilder1 = QueryBuilders.wildcardQuery("name", "*Andy*");//搜索name中含有 张学 的文档
-        WildcardQueryBuilder queryBuilder2 = QueryBuilders.wildcardQuery("address", "*Tai*");//搜索address中含有 香 的文档
+        WildcardQueryBuilder queryBuilder1 = QueryBuilders.wildcardQuery("name", "*Andy*");
+        WildcardQueryBuilder queryBuilder2 = QueryBuilders.wildcardQuery("address", "*Tai*");
 
         BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
 
