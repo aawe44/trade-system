@@ -6,7 +6,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
 
 @ComponentScan(basePackages = {"com.jason"})
-@MapperScan({"com.jason.trade.goods.db.mappers"})
+@MapperScan({"com.jason.trade.goods.db.mappers","com.jason.trade.order.db.mappers"})
 @SpringBootApplication
 public class TradeWebPortalApplication {
 

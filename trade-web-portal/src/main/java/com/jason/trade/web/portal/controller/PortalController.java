@@ -5,6 +5,8 @@ import com.alibaba.fastjson.JSON;
 import com.jason.trade.goods.db.model.Goods;
 import com.jason.trade.goods.service.GoodsService;
 import com.jason.trade.goods.service.impl.SearchServiceImpl;
+import com.jason.trade.order.db.model.Order;
+import com.jason.trade.order.service.OrderService;
 import com.jason.trade.web.portal.util.CommonUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +28,9 @@ public class PortalController {
     private GoodsService goodsService;
     @Autowired
     private SearchServiceImpl searchService;
+
+    @Autowired
+    private OrderService orderService;
 
     /**
      * Display the goods_detail page.
@@ -55,19 +60,6 @@ public class PortalController {
         return modelAndView;
     }
 
-    /**
-     * Initiate the purchase process for a specific goods item.
-     *
-     * @param userId  The ID of the user making the purchase.
-     * @param goodsId The ID of the goods to be purchased.
-     * @return A ModelAndView for the purchase process.
-     */
-    @RequestMapping("/buy/{userId}/{goodsId}")
-    public ModelAndView buy(@PathVariable long userId, @PathVariable long goodsId) {
-
-        log.info("buy userId={}, goodsId={}", userId, goodsId);
-        return null;
-    }
 
     /**
      * Display the search page.
@@ -95,4 +87,28 @@ public class PortalController {
         return "search";
 
     }
+
+    /**
+     * Initiate the purchase process for a specific goods item.
+     *
+     * @param userId  The ID of the user making the purchase.
+     * @param goodsId The ID of the goods to be purchased.
+     * @return A ModelAndView for the purchase process.
+     */
+    @RequestMapping("/buy/{userId}/{goodsId}")
+    public String buy(Map<String, Object> resultMap, @PathVariable long userId, @PathVariable long goodsId) {
+        // Log information about the request.
+        log.info("userId={}, goodsId={}", userId, goodsId);
+
+        // Create an order based on the provided user and product IDs.
+        Order order = orderService.createOrder(userId, goodsId);
+
+        // Populate the result map with order information and a success message.
+        resultMap.put("order", order);
+        resultMap.put("resultInfo", "Order placed successfully");
+
+        // Return the view name "buy_result" to display the result.
+        return "buy_result";
+    }
+
 }
