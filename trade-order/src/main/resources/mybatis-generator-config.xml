@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE generatorConfiguration PUBLIC "-//mybatis.org//DTD MyBatis Generator Configuration 1.0//EN"
+        "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd">
+
+<generatorConfiguration>
+
+    <context id="testTables" targetRuntime="MyBatis3">
+
+        <commentGenerator>
+
+            <property name="suppressAllComments" value="true"/>
+        </commentGenerator>
+
+        <jdbcConnection
+                driverClass="com.mysql.cj.jdbc.Driver"
+                connectionURL="jdbc:mysql://localhost:3306/trade_sys?serverTimezone=GMT"
+                userId="root"
+                password="1234">
+        </jdbcConnection>
+
+        <javaTypeResolver>
+            <property name="forceBigDecimals" value="false"/>
+        </javaTypeResolver>
+
+        <!-- Settings for generating Java model classes (POJOs). -->
+        <javaModelGenerator targetPackage="com.jason.trade.order.db.model" targetProject="trade-order/src/main/java">
+            <!-- Enable sub-packages with schema as a suffix. -->
+            <property name="enableSubPackages" value="true"/>
+            <!-- Trim strings retrieved from the database. -->
+            <property name="trimStrings" value="true"/>
+        </javaModelGenerator>
+
+        <!-- Settings for generating SQL mapping files (XML). -->
+        <sqlMapGenerator targetPackage="mappers" targetProject="trade-order/src/main/resources">
+            <!-- Enable sub-packages with schema as a suffix. -->
+            <property name="enableSubPackages" value="true"/>
+        </sqlMapGenerator>
+
+        <!-- Settings for generating Java client interfaces. -->
+        <javaClientGenerator type="XMLMAPPER" targetPackage="com.jason.trade.order.db.mappers"
+                             targetProject="trade-order/src/main/java">
+            <!-- Enable sub-packages with schema as a suffix. -->
+            <property name="enableSubPackages" value="true"/>
+        </javaClientGenerator>
+
+        <!-- Define the table to generate code for. -->
+        <table schema="" tableName="order_info" domainObjectName="Order" enableCountByExample="false"
+               enableDeleteByExample="false" enableSelectByExample="false" enableUpdateByExample="false"
+               selectByExampleQueryId="false"></table>
+
+    </context>
+</generatorConfiguration>
