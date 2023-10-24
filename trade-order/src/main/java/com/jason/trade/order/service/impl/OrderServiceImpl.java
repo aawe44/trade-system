@@ -47,7 +47,7 @@ public class OrderServiceImpl implements OrderService {
                 .activityType(0)
                 .goodsId(goodsId)
                 .userId(userId)
-                .status(1)
+                .status(AWAITING_ORDER)
                 .createTime(new Date())
                 .build();
 
