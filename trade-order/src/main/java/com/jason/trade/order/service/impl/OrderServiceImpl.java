@@ -6,6 +6,7 @@ import com.jason.trade.goods.db.model.Goods;
 import com.jason.trade.order.db.dao.OrderDao;
 import com.jason.trade.order.db.model.Order;
 import com.jason.trade.order.service.OrderService;
+import com.jason.trade.order.utils.SnowflakeIdWorker;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -23,16 +24,29 @@ public class OrderServiceImpl implements OrderService {
     @Autowired
     private GoodsDao goodsDao;
 
+    private SnowflakeIdWorker snowFlake = new SnowflakeIdWorker(6, 8);
+
+
+    /*
+     * 0: No available inventory, invalid order
+     * 1: Created and awaiting payment
+     * 2: Payment completed
+     */
+    private static final int INVALID_ORDER = 0;
+    private static final int AWAITING_ORDER = 1;
+    private static final int COMPLETED_ORDER = 2;
+
     @Override
     // Creates a new order for a user and a product.
     public Order createOrder(long userId, long goodsId) {
 
         // Build the order object with initial data.
         Order order = Order.builder()
+                .id(snowFlake.nextId())
                 .activityId(0L)
                 .activityType(0)
-                .userId(userId)
                 .goodsId(goodsId)
+                .userId(userId)
                 .status(1)
                 .createTime(new Date())
                 .build();
@@ -65,12 +79,34 @@ public class OrderServiceImpl implements OrderService {
     @Override
     // Retrieves an order by its unique ID.
     public Order queryOrder(long orderId) {
-        return null; // To be implemented.
+        return orderDao.queryOrderById(orderId);
     }
 
     @Override
-    // Processes the payment for an order with the given ID.
+// Processes payment for an order with the given ID.
     public void payOrder(long orderId) {
-        // To be implemented.
+        log.info("Paying order, Order ID: {}", orderId);
+
+        Order order = orderDao.queryOrderById(orderId);
+
+        if (order == null) {
+            log.error("Order ID={}, Order does not exist", orderId);
+            return;
+        }
+
+        int orderStatus = order.getStatus(); // Store the order status in a variable for clarity
+
+        if (orderStatus != AWAITING_ORDER) {
+            log.error("Order ID={}, Order status cannot be paid", orderId);
+            return;
+        }
+
+        log.info("Initiating payment through a third-party payment platform...");
+
+        order.setPayTime(new Date());
+
+        order.setStatus(COMPLETED_ORDER);
+        orderDao.updateOrder(order);
     }
+
 }

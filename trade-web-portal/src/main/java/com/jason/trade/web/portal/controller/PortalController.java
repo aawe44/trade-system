@@ -111,4 +111,55 @@ public class PortalController {
         return "buy_result";
     }
 
+    /**
+     * Handles the request to query an order by its ID.
+     *
+     * @param resultMap A map for storing result data to be displayed in the view.
+     * @param orderId   The ID of the order to be queried.
+     * @return The view name for displaying the order details.
+     */
+    @RequestMapping("/order/query/{orderId}")
+    public String orderQuery(Map<String, Object> resultMap, @PathVariable long orderId) {
+        // Query the order using the provided orderId
+        Order order = orderService.queryOrder(orderId);
+
+        // Log information about the order and its JSON representation
+        log.info("orderId={}, order={}", orderId, JSON.toJSON(order));
+
+        // Convert the order's payPrice to a user-friendly format
+        String orderShowPrice = CommonUtils.changeF2Y(order.getPayPrice());
+
+        // Add order and orderShowPrice to the resultMap to be displayed in the view
+        resultMap.put("order", order);
+        resultMap.put("orderShowPrice", orderShowPrice);
+
+        // Return the view name for displaying the order details
+        return "order_detail";
+    }
+
+
+    /**
+     * Handles the request to pay for an order with the given ID.
+     *
+     * @param resultMap A map for storing result data to be displayed in the view.
+     * @param orderId   The ID of the order to be paid.
+     * @return The view name for displaying the order details or an error view in case of an exception.
+     * @throws Exception If an error occurs during the payment process.
+     */
+    @RequestMapping("/order/payOrder/{orderId}")
+    public String payOrder(Map<String, Object> resultMap, @PathVariable long orderId) throws Exception {
+        try {
+            // Attempt to process the payment for the order with the provided orderId
+            orderService.payOrder(orderId);
+
+            // If payment is successful, redirect to the order details page
+            return "redirect:/order/query/" + orderId;
+        } catch (Exception e) {
+            // If an exception occurs during payment, log the error and display an error view
+            log.error("payOrder error, errorMessage: {}", e.getMessage());
+            resultMap.put("errorInfo", e.getMessage());
+            return "error";
+        }
+    }
+
 }
