@@ -6,6 +6,7 @@ import com.jason.trade.goods.db.model.Goods;
 import com.jason.trade.order.db.dao.OrderDao;
 import com.jason.trade.order.db.model.Order;
 import com.jason.trade.order.db.model.OrderStatus;
+import com.jason.trade.order.mq.OrderMessageSender;
 import com.jason.trade.order.service.OrderService;
 import com.jason.trade.order.utils.SnowflakeIdWorker;
 import lombok.extern.slf4j.Slf4j;
@@ -27,6 +28,9 @@ public class OrderServiceImpl implements OrderService {
 
     private SnowflakeIdWorker snowFlake = new SnowflakeIdWorker(6, 8);
 
+    @Autowired
+    private OrderMessageSender orderMessageSender;
+
 
     @Override
     // Creates a new order for a user and a product.
@@ -43,26 +47,31 @@ public class OrderServiceImpl implements OrderService {
                 .createTime(new Date())
                 .build();
 
+        // 1. Check if the product exists.
         // Retrieve product information from the goods service.
         Goods goods = goodsDao.queryGoodsById(goodsId);
 
-        // Check if the product exists.
         if (goods == null) {
             log.error("Goods is null, goodsId={}, userId={}", goodsId, userId);
             return null;
         }
 
+
+        // 4. Create order
         // Set the order's pay price based on the product's price.
         order.setPayPrice(goods.getPrice());
 
         // Insert the order into the database.
-        boolean result = orderDao.insertOrder(order);
+        boolean insertResult = orderDao.insertOrder(order);
 
         // Check if the order insertion was successful.
-        if (!result) {
+        if (!insertResult) {
             log.error("Order insert error, order={}", JSON.toJSONString(order));
             return null;
         }
+
+        // 5. 發送訂單支付狀態檢查消息
+        orderMessageSender.sendPayStatusCheckDelayMessage(JSON.toJSONString(order));
 
         // Return the created order.
         return order;
