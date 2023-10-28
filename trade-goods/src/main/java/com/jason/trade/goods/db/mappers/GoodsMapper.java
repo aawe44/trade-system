@@ -50,4 +50,6 @@ public interface GoodsMapper {
      * @mbg.generated Fri Oct 13 23:36:56 EDT 2023
      */
     int updateByPrimaryKey(Goods record);
+
+    int lockStock(long goodsId);
 }

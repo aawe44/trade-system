@@ -3,6 +3,7 @@ package com.jason.trade.order.service.impl;
 import com.alibaba.fastjson.JSON;
 import com.jason.trade.goods.db.dao.GoodsDao;
 import com.jason.trade.goods.db.model.Goods;
+import com.jason.trade.goods.service.GoodsService;
 import com.jason.trade.order.db.dao.OrderDao;
 import com.jason.trade.order.db.model.Order;
 import com.jason.trade.order.db.model.OrderStatus;
@@ -12,6 +13,7 @@ import com.jason.trade.order.utils.SnowflakeIdWorker;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 
@@ -31,7 +33,18 @@ public class OrderServiceImpl implements OrderService {
     @Autowired
     private OrderMessageSender orderMessageSender;
 
+    @Autowired
+    private GoodsService goodsService;
 
+    /**
+     * 创建订单和库存锁定在一个事务中，要么同时成功，要么同时失败
+     * 使用 @Transactional(rollbackFor = Exception.class)
+     *
+     * @param userId
+     * @param goodsId
+     * @return
+     */
+    @Transactional(rollbackFor = Exception.class)
     @Override
     // Creates a new order for a user and a product.
     public Order createOrder(long userId, long goodsId) {
@@ -55,6 +68,13 @@ public class OrderServiceImpl implements OrderService {
             log.error("Goods is null, goodsId={}, userId={}", goodsId, userId);
             return null;
         }
+
+        if (goods.getAvailableStock() <= 0) {
+            log.error("goods stock not enough goodsId={}, userId={}", goodsId, userId);
+            throw new RuntimeException("商品庫存不足");
+        }
+
+        boolean lockResult = goodsService.lockStock(goodsId);
 
 
         // 4. Create order

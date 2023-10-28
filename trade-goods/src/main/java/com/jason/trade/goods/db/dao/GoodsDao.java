@@ -13,4 +13,5 @@ public interface GoodsDao {
     boolean updateGoods(Goods goods);
 
 
+    boolean lockStock(long goodsId);
 }

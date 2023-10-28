@@ -6,4 +6,6 @@ public interface GoodsService {
     boolean insertGoods(Goods goods);
 
     Goods queryGoodsById(long id);
+
+    boolean lockStock(long goodsId);
 }
