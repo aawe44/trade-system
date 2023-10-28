@@ -96,20 +96,33 @@ public class PortalController {
      * @return A ModelAndView for the purchase process.
      */
     @RequestMapping("/buy/{userId}/{goodsId}")
-    public String buy(Map<String, Object> resultMap, @PathVariable long userId, @PathVariable long goodsId) {
-        // Log information about the request.
-        log.info("userId={}, goodsId={}", userId, goodsId);
+    public ModelAndView buy(@PathVariable long userId, @PathVariable long goodsId) {
+        // Create a ModelAndView with the view name "buy_result" to be returned later
+        ModelAndView modelAndView = new ModelAndView("buy_result");
 
-        // Create an order based on the provided user and product IDs.
-        Order order = orderService.createOrder(userId, goodsId);
+        try {
+            // Log the start of the order creation process
+            log.info("Attempting to create an order for userId={}, goodsId={}", userId, goodsId);
 
-        // Populate the result map with order information and a success message.
-        resultMap.put("order", order);
-        resultMap.put("resultInfo", "Order placed successfully");
+            // Attempt to create an order using the provided userId and goodsId
+            Order order = orderService.createOrder(userId, goodsId);
 
-        // Return the view name "buy_result" to display the result.
-        return "buy_result";
+            // If the order is successfully created, add it to the model and set a success message
+            modelAndView.addObject("order", order);
+            modelAndView.addObject("resultInfo", "Order placed successfully");
+
+        } catch (Exception e) {
+            // If an exception occurs during the order creation process, log the error and handle it
+            log.error("Failed to create an order. Error message: {}", e.getMessage());
+
+            // Add an error message to the model to inform the user about the failure
+            modelAndView.addObject("resultInfo", "Order placement failed. Reason: " + e.getMessage());
+        }
+
+        // Return the ModelAndView, which will render the "buy_result" view with the appropriate data
+        return modelAndView;
     }
+
 
     /**
      * Handles the request to query an order by its ID.
