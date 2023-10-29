@@ -41,7 +41,27 @@ public class GoodsDaoImpl implements GoodsDao {
     public boolean lockStock(long goodsId) {
         int result = goodsMapper.lockStock(goodsId);
         if (result < 0) {
-            log.error("锁定库存失败");
+            log.error("Failed to lock stock");
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public boolean deductStock(Long goodsId) {
+        int result = goodsMapper.deductStock(goodsId);
+        if (result < 1) {
+            log.error("Failed to deduct stock");
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public boolean revertStock(Long goodsId) {
+        int result = goodsMapper.revertStock(goodsId);
+        if (result < 1) {
+            log.error("Failed to revert stock");
             return false;
         }
         return true;

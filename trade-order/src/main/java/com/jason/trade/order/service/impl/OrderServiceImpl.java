@@ -103,31 +103,43 @@ public class OrderServiceImpl implements OrderService {
         return orderDao.queryOrderById(orderId);
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
-// Processes payment for an order with the given ID.
+    // Processes payment for an order with the given ID.
     public void payOrder(long orderId) {
         log.info("Paying order, Order ID: {}", orderId);
-
+        // Step 1: Retrieve the order
         Order order = orderDao.queryOrderById(orderId);
-
         if (order == null) {
             log.error("Order ID={}, Order does not exist", orderId);
-            return;
+            throw new RuntimeException("Order does not exist");
         }
 
+        // Step 2: Check if the order can be paid
         int orderStatus = order.getStatus(); // Store the order status in a variable for clarity
-
         if (orderStatus != OrderStatus.AWAITING_ORDER.getCode()) {
             log.error("Order ID={}, Order status cannot be paid", orderId);
-            return;
+            throw new RuntimeException("Order status cannot be paid");
         }
 
         log.info("Initiating payment through a third-party payment platform...");
 
+        // Step 3: Update order details
         order.setPayTime(new Date());
 
         order.setStatus(OrderStatus.COMPLETED_ORDER.getCode());
-        orderDao.updateOrder(order);
+        boolean updateResult = orderDao.updateOrder(order);
+        if (!updateResult) {
+            log.error("Order ID={} - Order payment status update failed", orderId);
+            throw new RuntimeException("Order payment status update failed");
+        }
+
+        //库存扣减
+        boolean deductResult = goodsService.deductStock(order.getGoodsId());
+        if (!deductResult) {
+            log.error("Order ID={} - Stock deduction failed", orderId);
+            throw new RuntimeException("Stock deduction failed");
+        }
     }
 
 }

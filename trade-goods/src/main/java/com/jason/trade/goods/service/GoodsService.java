@@ -8,4 +8,8 @@ public interface GoodsService {
     Goods queryGoodsById(long id);
 
     boolean lockStock(long goodsId);
+
+    boolean deductStock(Long goodsId);
+
+    boolean revertStock(Long goodsId);
 }

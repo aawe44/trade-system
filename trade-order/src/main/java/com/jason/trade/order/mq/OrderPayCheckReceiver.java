@@ -1,6 +1,7 @@
 package com.jason.trade.order.mq;
 
 import com.alibaba.fastjson.JSON;
+import com.jason.trade.goods.service.GoodsService;
 import com.jason.trade.order.db.dao.OrderDao;
 import com.jason.trade.order.db.model.Order;
 import com.jason.trade.order.db.model.OrderStatus;
@@ -18,6 +19,8 @@ public class OrderPayCheckReceiver {
     @Autowired
     private OrderDao orderDao;
 
+    @Autowired
+    private GoodsService goodsService;
 
     @RabbitListener(queues = "order.pay.status.check.queue")
     public void process(String message) {
@@ -26,15 +29,21 @@ public class OrderPayCheckReceiver {
 
         Order order = JSON.parseObject(message, Order.class);
 
-        // Check if the order is still in the 'created' status
+        // 1. Query order information
         Order orderInfo = orderDao.queryOrderById(order.getId());
+
+        // 2. Check if the order is awaiting payment
         if (orderInfo.getStatus() == OrderStatus.AWAITING_ORDER.getCode()) {
 
             log.info("Order {} is closed due to timeout.", order.getId());
 
-            // Update the order status to 'closed' if it's still in the 'created' status
+            // 3. Update the order status to "CLOSED"
             orderInfo.setStatus(OrderStatus.ORDER_CLOSED_TIMEOUT.getCode());
             orderDao.updateOrder(orderInfo);
+
+            // 4. Revert the locked stock
+            goodsService.revertStock(orderInfo.getGoodsId());
+
         }
     }
 }
