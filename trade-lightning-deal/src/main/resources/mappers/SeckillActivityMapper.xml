@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jason.trade.lightning.deal.db.mappers.SeckillActivityMapper">
+  <resultMap id="BaseResultMap" type="com.jason.trade.lightning.deal.db.model.SeckillActivity">
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="activity_name" jdbcType="VARCHAR" property="activityName" />
+    <result column="goods_id" jdbcType="BIGINT" property="goodsId" />
+    <result column="start_time" jdbcType="TIMESTAMP" property="startTime" />
+    <result column="end_time" jdbcType="TIMESTAMP" property="endTime" />
+    <result column="available_stock" jdbcType="INTEGER" property="availableStock" />
+    <result column="lock_stock" jdbcType="INTEGER" property="lockStock" />
+    <result column="activity_status" jdbcType="INTEGER" property="activityStatus" />
+    <result column="seckill_price" jdbcType="INTEGER" property="seckillPrice" />
+    <result column="old_price" jdbcType="INTEGER" property="oldPrice" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    id, activity_name, goods_id, start_time, end_time, available_stock, lock_stock, activity_status, 
+    seckill_price, old_price, create_time
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from seckill_activity
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from seckill_activity
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+  <insert id="insert" parameterType="com.jason.trade.lightning.deal.db.model.SeckillActivity">
+    insert into seckill_activity (id, activity_name, goods_id, 
+      start_time, end_time, available_stock, 
+      lock_stock, activity_status, seckill_price, 
+      old_price, create_time)
+    values (#{id,jdbcType=BIGINT}, #{activityName,jdbcType=VARCHAR}, #{goodsId,jdbcType=BIGINT}, 
+      #{startTime,jdbcType=TIMESTAMP}, #{endTime,jdbcType=TIMESTAMP}, #{availableStock,jdbcType=INTEGER}, 
+      #{lockStock,jdbcType=INTEGER}, #{activityStatus,jdbcType=INTEGER}, #{seckillPrice,jdbcType=INTEGER}, 
+      #{oldPrice,jdbcType=INTEGER}, #{createTime,jdbcType=TIMESTAMP})
+  </insert>
+  <insert id="insertSelective" parameterType="com.jason.trade.lightning.deal.db.model.SeckillActivity">
+    insert into seckill_activity
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        id,
+      </if>
+      <if test="activityName != null">
+        activity_name,
+      </if>
+      <if test="goodsId != null">
+        goods_id,
+      </if>
+      <if test="startTime != null">
+        start_time,
+      </if>
+      <if test="endTime != null">
+        end_time,
+      </if>
+      <if test="availableStock != null">
+        available_stock,
+      </if>
+      <if test="lockStock != null">
+        lock_stock,
+      </if>
+      <if test="activityStatus != null">
+        activity_status,
+      </if>
+      <if test="seckillPrice != null">
+        seckill_price,
+      </if>
+      <if test="oldPrice != null">
+        old_price,
+      </if>
+      <if test="createTime != null">
+        create_time,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=BIGINT},
+      </if>
+      <if test="activityName != null">
+        #{activityName,jdbcType=VARCHAR},
+      </if>
+      <if test="goodsId != null">
+        #{goodsId,jdbcType=BIGINT},
+      </if>
+      <if test="startTime != null">
+        #{startTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="endTime != null">
+        #{endTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="availableStock != null">
+        #{availableStock,jdbcType=INTEGER},
+      </if>
+      <if test="lockStock != null">
+        #{lockStock,jdbcType=INTEGER},
+      </if>
+      <if test="activityStatus != null">
+        #{activityStatus,jdbcType=INTEGER},
+      </if>
+      <if test="seckillPrice != null">
+        #{seckillPrice,jdbcType=INTEGER},
+      </if>
+      <if test="oldPrice != null">
+        #{oldPrice,jdbcType=INTEGER},
+      </if>
+      <if test="createTime != null">
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.jason.trade.lightning.deal.db.model.SeckillActivity">
+    update seckill_activity
+    <set>
+      <if test="activityName != null">
+        activity_name = #{activityName,jdbcType=VARCHAR},
+      </if>
+      <if test="goodsId != null">
+        goods_id = #{goodsId,jdbcType=BIGINT},
+      </if>
+      <if test="startTime != null">
+        start_time = #{startTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="endTime != null">
+        end_time = #{endTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="availableStock != null">
+        available_stock = #{availableStock,jdbcType=INTEGER},
+      </if>
+      <if test="lockStock != null">
+        lock_stock = #{lockStock,jdbcType=INTEGER},
+      </if>
+      <if test="activityStatus != null">
+        activity_status = #{activityStatus,jdbcType=INTEGER},
+      </if>
+      <if test="seckillPrice != null">
+        seckill_price = #{seckillPrice,jdbcType=INTEGER},
+      </if>
+      <if test="oldPrice != null">
+        old_price = #{oldPrice,jdbcType=INTEGER},
+      </if>
+      <if test="createTime != null">
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.jason.trade.lightning.deal.db.model.SeckillActivity">
+    update seckill_activity
+    set activity_name = #{activityName,jdbcType=VARCHAR},
+      goods_id = #{goodsId,jdbcType=BIGINT},
+      start_time = #{startTime,jdbcType=TIMESTAMP},
+      end_time = #{endTime,jdbcType=TIMESTAMP},
+      available_stock = #{availableStock,jdbcType=INTEGER},
+      lock_stock = #{lockStock,jdbcType=INTEGER},
+      activity_status = #{activityStatus,jdbcType=INTEGER},
+      seckill_price = #{seckillPrice,jdbcType=INTEGER},
+      old_price = #{oldPrice,jdbcType=INTEGER},
+      create_time = #{createTime,jdbcType=TIMESTAMP}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+</mapper>
