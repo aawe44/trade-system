@@ -23,6 +23,7 @@
         <module>trade-order</module>
         <module>trade-web-manager</module>
         <module>trade-web-portal</module>
+        <module>trade-lightning-deal</module>
     </modules>
     <dependencies>
         <dependency>
