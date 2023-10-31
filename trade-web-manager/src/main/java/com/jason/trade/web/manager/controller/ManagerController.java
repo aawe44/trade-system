@@ -68,66 +68,67 @@ public class ManagerController {
         return "add_goods";
 
     }
-
     /**
-     * 跳转到秒杀活动页面
+     * Redirects to the page for adding a seckill activity.
      *
-     * @return
+     * @return The view name for the seckill activity page.
      */
     @RequestMapping("/addSkillActivity")
     public String addSkillActivity() {
         return "add_skill_activity";
     }
 
-
     /**
-     * 添加秒杀活动信息
+     * Handles the action to add a new seckill activity.
      *
-     * @param activityName
-     * @param goodsId
-     * @param startTime
-     * @param endTime
-     * @param availableStock
-     * @param seckillPrice
-     * @param oldPrice
-     * @param resultMap
-     * @return
+     * @param activityName     The name of the seckill activity.
+     * @param goodsId          The ID of the associated goods.
+     * @param startTime        The start time of the seckill activity.
+     * @param endTime          The end time of the seckill activity.
+     * @param availableStock   The available stock for the seckill activity.
+     * @param seckillPrice     The seckill price.
+     * @param oldPrice         The original price.
+     * @param resultMap        A map for storing result data.
+     * @return The view name after adding the seckill activity.
      */
     @RequestMapping("/addSkillActivityAction")
-    public String addSkillActivityAction(@RequestParam("activityName") String activityName,
-                                         @RequestParam("goodsId") long goodsId,
-                                         @RequestParam("startTime") String startTime,
-                                         @RequestParam("endTime") String endTime,
-                                         @RequestParam("availableStock") int availableStock,
-                                         @RequestParam("seckillPrice") int seckillPrice,
-                                         @RequestParam("oldPrice") int oldPrice,
-                                         Map<String, Object> resultMap) {
+    public String addSkillActivityAction(
+            @RequestParam("activityName") String activityName,
+            @RequestParam("goodsId") long goodsId,
+            @RequestParam("startTime") String startTime,
+            @RequestParam("endTime") String endTime,
+            @RequestParam("availableStock") int availableStock,
+            @RequestParam("seckillPrice") int seckillPrice,
+            @RequestParam("oldPrice") int oldPrice,
+            Map<String, Object> resultMap) {
         try {
             SeckillActivity seckillActivity = new SeckillActivity();
             seckillActivity.setActivityName(activityName);
             seckillActivity.setGoodsId(goodsId);
 
-            //获取到的startTime时间格式  2022-10-05T22:51
-            startTime = startTime.substring(0, 10) + " " + startTime.substring(11);
-            endTime = endTime.substring(0, 10) + " " + endTime.substring(11);
-            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:mm");
-            seckillActivity.setStartTime(format.parse(startTime));
-            seckillActivity.setEndTime(format.parse(endTime));
+            // Format start and end times
+            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+            seckillActivity.setStartTime(format.parse(startTime.replace('T', ' ')));
+            seckillActivity.setEndTime(format.parse(endTime.replace('T', ' ')));
+
             seckillActivity.setAvailableStock(availableStock);
-            //默认上架
+            // Default status to "1" for on sale
             seckillActivity.setActivityStatus(1);
-            //初始为0
+            // Initialize lock stock to "0"
             seckillActivity.setLockStock(0);
             seckillActivity.setSeckillPrice(seckillPrice);
             seckillActivity.setOldPrice(oldPrice);
             seckillActivity.setCreateTime(new Date());
+
             seckillActivityService.insertSeckillActivity(seckillActivity);
             resultMap.put("seckillActivity", seckillActivity);
+
             return "add_skill_activity";
         } catch (Exception e) {
-            log.error("addSkillActivityAction error", e);
-            return "500";
+            log.error("Error while adding seckill activity", e);
+            return "500"; // Consider a more appropriate error handling view or action
         }
     }
+
 
 }
