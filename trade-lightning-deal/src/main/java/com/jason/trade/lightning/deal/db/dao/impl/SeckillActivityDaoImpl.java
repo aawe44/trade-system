@@ -22,11 +22,11 @@ public class SeckillActivityDaoImpl implements SeckillActivityDao {
 
     @Override
     public SeckillActivity querySeckillActivityById(long id) {
-        return  seckillActivityMapper.selectByPrimaryKey(id);
+        return seckillActivityMapper.selectByPrimaryKey(id);
     }
 
     @Override
     public List<SeckillActivity> querySeckillActivityByStatus(int status) {
-        return null;
+        return seckillActivityMapper.queryActivitysByStatus(status);
     }
 }

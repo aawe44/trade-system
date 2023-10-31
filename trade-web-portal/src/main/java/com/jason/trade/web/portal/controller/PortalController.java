@@ -5,6 +5,8 @@ import com.alibaba.fastjson.JSON;
 import com.jason.trade.goods.db.model.Goods;
 import com.jason.trade.goods.service.GoodsService;
 import com.jason.trade.goods.service.impl.SearchServiceImpl;
+import com.jason.trade.lightning.deal.db.model.SeckillActivity;
+import com.jason.trade.lightning.deal.service.SeckillActivityService;
 import com.jason.trade.order.db.model.Order;
 import com.jason.trade.order.service.OrderService;
 import com.jason.trade.web.portal.util.CommonUtils;
@@ -31,6 +33,10 @@ public class PortalController {
 
     @Autowired
     private OrderService orderService;
+
+    @Autowired
+    private SeckillActivityService seckillActivityService;
+
 
     /**
      * Display the goods_detail page.
@@ -170,6 +176,68 @@ public class PortalController {
         } catch (Exception e) {
             // If an exception occurs during payment, log the error and display an error view
             log.error("payOrder error, errorMessage: {}", e.getMessage());
+            resultMap.put("errorInfo", e.getMessage());
+            return "error";
+        }
+    }
+
+    /**
+     * Display details of a seckill activity.
+     *
+     * @param resultMap A map for storing result data.
+     * @param seckillId The ID of the seckill activity.
+     * @return The view name for the seckill details page.
+     */
+    @RequestMapping("/seckill/{seckillId}")
+    public String showSeckillInfo(Map<String, Object> resultMap, @PathVariable long seckillId) {
+        try {
+            SeckillActivity seckillActivity = seckillActivityService.querySeckillActivityById(seckillId);
+
+            if (seckillActivity == null) {
+                log.error("Seckill activity not found for seckillId: {}", seckillId);
+                throw new RuntimeException("Seckill activity not found");
+            }
+
+            log.info("Seckill activity details: seckillId={}, seckillActivity={}", seckillId, JSON.toJSON(seckillActivity));
+
+            String seckillPriceFormatted = CommonUtils.changeF2Y(seckillActivity.getSeckillPrice());
+            String oldPriceFormatted = CommonUtils.changeF2Y(seckillActivity.getOldPrice());
+
+            Goods goods = goodsService.queryGoodsById(seckillActivity.getGoodsId());
+
+            if (goods == null) {
+                log.error("Associated goods not found for seckillId: {}, goodsId: {}", seckillId, seckillActivity.getGoodsId());
+                throw new RuntimeException("Associated goods not found");
+            }
+
+            resultMap.put("seckillActivity", seckillActivity);
+            resultMap.put("seckillPrice", seckillPriceFormatted);
+            resultMap.put("oldPrice", oldPriceFormatted);
+            resultMap.put("goods", goods);
+
+            return "seckill_item";
+        } catch (Exception e) {
+            log.error("Failed to get seckill info details. Error message: {}", e.getMessage());
+            resultMap.put("errorInfo", e.getMessage());
+            return "error";
+        }
+    }
+
+
+    /**
+     * Retrieve a list of active seckill activities.
+     *
+     * @param resultMap A map for storing result data.
+     * @return The view name for the seckill activity list.
+     */
+    @RequestMapping("/seckill/list")
+    public String activityList(Map<String, Object> resultMap) {
+        try {
+            List<SeckillActivity> seckillActivities = seckillActivityService.queryActivitysByStatus(1);
+            resultMap.put("seckillActivities", seckillActivities);
+            return "seckill_activity_list";
+        } catch (Exception e) {
+            log.error("Failed to retrieve seckill activity list. Error message: {}", e.getMessage());
             resultMap.put("errorInfo", e.getMessage());
             return "error";
         }
