@@ -169,4 +169,11 @@
         from seckill_activity
         where activity_status = #{id,jdbcType=SMALLINT}
     </select>
+
+    <update id="updateAvailableStockByPrimaryKey" parameterType="java.lang.Long">
+        update seckill_activity
+        set available_stock = available_stock - 1
+        where id = #{id,jdbcType=BIGINT}
+          and available_stock > 0
+    </update>
 </mapper>

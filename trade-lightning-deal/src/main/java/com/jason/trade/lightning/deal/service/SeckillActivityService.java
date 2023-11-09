@@ -29,4 +29,7 @@ public interface SeckillActivityService {
      */
     List<SeckillActivity> queryActivitysByStatus(int status);
 
+    boolean processSeckillReqBase(long seckillActivityId);
+
+
 }
