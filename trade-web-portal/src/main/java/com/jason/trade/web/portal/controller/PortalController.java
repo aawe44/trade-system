@@ -247,8 +247,8 @@ public class PortalController {
     @ResponseBody
     @RequestMapping("/seckill/buy/{seckillId}")
     public String seckillInfoBase(@PathVariable long seckillId) {
-         boolean res = seckillActivityService.processSeckillReqBase(seckillId);
-//        boolean res = seckillActivityService.processSeckill(seckillId);
+//         boolean res = seckillActivityService.processSeckillReqBase(seckillId);
+        boolean res = seckillActivityService.processSeckill(seckillId);
         if (res) {
             return "商品抢购成功";
         } else {
