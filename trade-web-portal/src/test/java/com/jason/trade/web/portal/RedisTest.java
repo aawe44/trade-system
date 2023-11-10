@@ -1,6 +1,5 @@
 package com.jason.trade.web.portal;
 
-
 import com.jason.trade.lightning.deal.utils.RedisWorker;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -12,34 +11,41 @@ import org.springframework.test.context.junit4.SpringRunner;
 @SpringBootTest
 public class RedisTest {
 
-
     @Autowired
-    public RedisWorker redisWorker;
+    private RedisWorker redisWorker;
 
     @Test
-    public void setValue() {
-        redisWorker.setValue("testName", "你好");
+    public void testSetValueInRedis() {
+        // Test setting a key-value pair in Redis
+        redisWorker.setValue("testName", "Hello");
     }
 
     @Test
-    public void getValue() {
+    public void testGetValueFromRedis() {
+        // Test getting the value associated with a key from Redis
         System.out.println(redisWorker.getValueByKey("testName"));
     }
 
     @Test
-    public void setStockTest() {
-        //stock:秒杀活动ID    库存数
+    public void testSetStockInRedis() {
+        // Test setting stock for a seckill activity in Redis
+        // Format: stock:{seckillActivityId} -> stock value
         redisWorker.setValue("stock:9", 10L);
     }
 
     @Test
-    public void getStockValue() {
+    public void testGetStockValueFromRedis() {
+        // Test getting the stock value for a seckill activity from Redis
         System.out.println(redisWorker.getValueByKey("stock:9"));
     }
 
     @Test
-    public void stockCheckTest() {
+    public void testStockDeductCheckInRedis() {
+        // Test stock deduction check using Redis Lua script
+        // Format: stock:{seckillActivityId} -> stock value
         redisWorker.stockDeductCheck("stock:668899");
+
+        // Print the updated stock value after the deduction check
         System.out.println(redisWorker.getValueByKey("stock:668899"));
     }
 }

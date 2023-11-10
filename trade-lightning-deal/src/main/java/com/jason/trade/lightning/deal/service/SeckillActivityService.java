@@ -30,18 +30,18 @@ public interface SeckillActivityService {
     List<SeckillActivity> queryActivitysByStatus(int status);
 
     /**
-     * 处理秒杀请求
+     * Processes a seckill request.
      *
-     * @param seckillActivityId
-     * @return
+     * @param seckillActivityId The ID of the seckill activity.
+     * @return True if the seckill request was successfully processed, false otherwise.
      */
     boolean processSeckillReqBase(long seckillActivityId);
 
     /**
-     * 处理秒杀请求
+     * Processes a seckill request.
      *
-     * @param seckillActivityId
-     * @return
+     * @param seckillActivityId The ID of the seckill activity.
+     * @return True if the seckill request was successfully processed, false otherwise.
      */
     boolean processSeckill(long seckillActivityId);
 

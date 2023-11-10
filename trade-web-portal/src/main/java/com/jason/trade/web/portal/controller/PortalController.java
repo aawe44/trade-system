@@ -246,14 +246,17 @@ public class PortalController {
 
     @ResponseBody
     @RequestMapping("/seckill/buy/{seckillId}")
-    public String seckillInfoBase(@PathVariable long seckillId) {
-//         boolean res = seckillActivityService.processSeckillReqBase(seckillId);
-        boolean res = seckillActivityService.processSeckill(seckillId);
-        if (res) {
-            return "商品抢购成功";
+    public String seckillInfo(@PathVariable long seckillId) {
+        // Uncomment the appropriate line based on the seckill processing method
+        // boolean success = seckillActivityService.processSeckillReqBase(seckillId);
+        boolean success = seckillActivityService.processSeckill(seckillId);
+
+        if (success) {
+            return "Seckill successful! Congratulations on your purchase!";
         } else {
-            return "商品抢购失败，商品已经售完";
+            return "Seckill unsuccessful. The product is sold out.";
         }
     }
+
 
 }

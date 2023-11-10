@@ -1,6 +1,5 @@
 package com.jason.trade.lightning.deal.utils;
 
-
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,22 +16,22 @@ public class RedisWorker {
     private JedisPool jedisPool;
 
     /**
-     * 向Redis中设置key-value值
+     * Set a key-value pair in Redis.
      *
-     * @param key
-     * @param value
+     * @param key   The key to set.
+     * @param value The value to set.
      */
     public void setValue(String key, String value) {
-        Jedis jedisClient = jedisPool.getResource();
-        jedisClient.set(key, value);
-        jedisClient.close();
+        try (Jedis jedisClient = jedisPool.getResource()) {
+            jedisClient.set(key, value);
+        }
     }
 
     /**
-     * 根据key从Redis中获取对应的值
+     * Get the value associated with a key from Redis.
      *
-     * @param key
-     * @return
+     * @param key The key to retrieve the value for.
+     * @return The value associated with the key.
      */
     public String getValueByKey(String key) {
         Jedis jedisClient = jedisPool.getResource();
@@ -42,10 +41,10 @@ public class RedisWorker {
     }
 
     /**
-     * 向Redis中设置key-value值
+     * Set a key-value pair in Redis with a long value.
      *
-     * @param key
-     * @param value
+     * @param key   The key to set.
+     * @param value The long value to set.
      */
     public void setValue(String key, Long value) {
         Jedis jedisClient = jedisPool.getResource();
@@ -54,10 +53,10 @@ public class RedisWorker {
     }
 
     /**
-     * 通过Redis中Lua，判断库存和对库存进行扣减
+     * Check and deduct stock using a Lua script in Redis.
      *
-     * @param key
-     * @return
+     * @param key The key representing the stock in Redis.
+     * @return True if the stock deduction was successful, false otherwise.
      */
     public boolean stockDeductCheck(String key) {
         Jedis jedisClient = null;
@@ -74,23 +73,19 @@ public class RedisWorker {
                     "             end;\n" +
                     "             return -1;";
 
-            /*
-             * 执行脚本
-             * redis自从2.6.0版本起就采用内置的Lua解释器通过EVAL命令去执行脚本
-             */
             long scriptResult = (Long) jedisClient.eval(script,
                     Collections.singletonList(key),
                     Collections.emptyList());
 
             if (scriptResult < 0) {
-                log.info("很遗憾，库存不足,抢购失败");
+                log.info("Unfortunately, the stock is insufficient, and the purchase failed");
                 return false;
             } else {
-                log.info("抢购成功，恭喜你");
+                log.info("Purchase successful, congratulations!");
             }
             return true;
         } catch (Exception e) {
-            log.error("库存扣减异常:{}", e.getMessage());
+            log.error("Stock deduction exception: {}", e.getMessage());
             return false;
         } finally {
             if (jedisClient != null) {
@@ -98,5 +93,4 @@ public class RedisWorker {
             }
         }
     }
-
 }

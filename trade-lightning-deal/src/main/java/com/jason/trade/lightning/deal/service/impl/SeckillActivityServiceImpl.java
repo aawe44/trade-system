@@ -35,63 +35,73 @@ public class SeckillActivityServiceImpl implements SeckillActivityService {
     }
 
     /**
-     * 处理秒杀请求
-     * 高并发时会出现超卖
+     * Process basic seckill requests.
+     * Handles potential overselling in high concurrency scenarios.
      *
-     * @param seckillActivityId
-     * @return
+     * @param seckillActivityId Seckill activity ID
+     * @return Whether the operation was successful
      */
     @Override
     public boolean processSeckillReqBase(long seckillActivityId) {
+        // Retrieve information about the seckill activity
         SeckillActivity seckillActivity = seckillActivityDao.querySeckillActivityById(seckillActivityId);
 
+        // Check if the seckill activity exists
         if (seckillActivity == null) {
-            log.error("seckillActivityId = {} 查詢不到對應的秒殺活動", seckillActivityId);
-            throw new RuntimeException("查詢不到對應的秒殺活動");
+            log.error("Seckill activity ID = {} not found for corresponding seckill activity", seckillActivityId);
+            throw new RuntimeException("Unable to find corresponding seckill activity");
         }
+
         int availableStock = seckillActivity.getAvailableStock();
+
+        // Perform the seckill operation
         if (availableStock > 0) {
-            log.info("商品搶購成功");
+            log.info("Product successfully purchased during seckill");
             seckillActivityDao.updateAvailableStockByPrimaryKey(seckillActivityId);
             return true;
         } else {
-            log.info("商品搶購失敗，商品已經售完");
+            log.info("Seckill failed, product is sold out");
             return false;
         }
-
     }
 
-
     /**
-     * 处理秒杀请求
-     * 通过Redis Lua脚本先进行校验
+     * Process seckill requests using Redis Lua script for inventory deduction validation.
      *
-     * @param seckillActivityId
-     * @return
+     * @param seckillActivityId Seckill activity ID
+     * @return Whether the operation was successful
      */
     @Override
     public boolean processSeckill(long seckillActivityId) {
+        // Build the Redis key
         String key = "stock:" + seckillActivityId;
+
+        // Use a Lua script to validate inventory deduction
         boolean checkResult = redisWorker.stockDeductCheck(key);
         if (!checkResult) {
-            return false;
+            return false; // Insufficient stock, seckill failed
         }
 
-        //1.查询对应的秒杀活动信息
+        // Retrieve information about the seckill activity
         SeckillActivity seckillActivity = seckillActivityDao.querySeckillActivityById(seckillActivityId);
 
+        // Check if the seckill activity exists
         if (seckillActivity == null) {
-            log.error("seckillActivityId={} 查询不到对应的秒杀活动", seckillActivityId);
-            throw new RuntimeException("查询不到对应的秒杀活动");
+            log.error("Seckill activity ID = {} not found for corresponding seckill activity", seckillActivityId);
+            throw new RuntimeException("Unable to find corresponding seckill activity");
         }
+
         int availableStock = seckillActivity.getAvailableStock();
+
+        // Perform the seckill operation
         if (availableStock > 0) {
-            log.info("商品抢购成功");
+            log.info("Product successfully purchased during seckill");
             seckillActivityDao.updateAvailableStockByPrimaryKey(seckillActivityId);
             return true;
         } else {
-            log.info("商品抢购失败，商品已经售完");
+            log.info("Seckill failed, product is sold out");
             return false;
         }
     }
+
 }
