@@ -24,4 +24,16 @@ public class OrderMessageSender {
         // Use the AmqpTemplate to send the message to the specified exchange and routing key
         amqpTemplate.convertAndSend("order-event-exchange", "order.create", message);
     }
+
+    /**
+     * Sends a message to create an order.
+     *
+     * @param message The content of the message containing order information.
+     */
+    public void sendCreateOrderMessage(String message) {
+        log.info("Sending create order message: {}", message);
+        amqpTemplate.convertAndSend("order-event-exchange", "to.create.order", message);
+    }
+
+
 }

@@ -35,18 +35,17 @@ public class OrderServiceImpl implements OrderService {
 
     @Autowired
     private GoodsService goodsService;
-
     /**
-     * 创建订单和库存锁定在一个事务中，要么同时成功，要么同时失败
-     * 使用 @Transactional(rollbackFor = Exception.class)
+     * Creates an order and locks the corresponding inventory in a single transaction,
+     * ensuring either both succeed or both fail.
+     * Utilizes @Transactional(rollbackFor = Exception.class).
      *
-     * @param userId
-     * @param goodsId
-     * @return
+     * @param userId   The ID of the user placing the order.
+     * @param goodsId  The ID of the product being ordered.
+     * @return The created Order object or null if unsuccessful.
      */
     @Transactional(rollbackFor = Exception.class)
     @Override
-    // Creates a new order for a user and a product.
     public Order createOrder(long userId, long goodsId) {
 
         // Build the order object with initial data.
@@ -70,32 +69,25 @@ public class OrderServiceImpl implements OrderService {
         }
 
         if (goods.getAvailableStock() <= 0) {
-            log.error("goods stock not enough goodsId={}, userId={}", goodsId, userId);
-            throw new RuntimeException("商品庫存不足");
+            log.error("Goods stock not enough goodsId={}, userId={}", goodsId, userId);
+            throw new RuntimeException("Insufficient product inventory");
         }
 
+        // Attempt to lock the product's stock.
         boolean lockResult = goodsService.lockStock(goodsId);
+        if (!lockResult) {
+            log.error("Order stock lock error. Order: {}", JSON.toJSONString(order));
+            throw new RuntimeException("Failed to lock product inventory for the order");
+        }
 
-
-        // 4. Create order
-        // Set the order's pay price based on the product's price.
+        // Set the order's payment price based on the product's price.
         order.setPayPrice(goods.getPrice());
 
-        // Insert the order into the database.
-        boolean insertResult = orderDao.insertOrder(order);
-
-        // Check if the order insertion was successful.
-        if (!insertResult) {
-            log.error("Order insert error, order={}", JSON.toJSONString(order));
-            return null;
-        }
-
-        // 5. 發送訂單支付狀態檢查消息
-        orderMessageSender.sendPayStatusCheckDelayMessage(JSON.toJSONString(order));
-
-        // Return the created order.
+        // 4. Create the order and send a message to create the order.
+        orderMessageSender.sendCreateOrderMessage(JSON.toJSONString(order));
         return order;
     }
+
 
     @Override
     // Retrieves an order by its unique ID.

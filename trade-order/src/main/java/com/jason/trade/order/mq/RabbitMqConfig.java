@@ -81,4 +81,31 @@ public class RabbitMqConfig {
                 "order.pay.status.check",
                 null);
     }
+
+    /**
+     * Creates the order queue (regular queue).
+     *
+     * @return A Queue object representing the "create.order.queue" with specified properties.
+     */
+    @Bean
+    public Queue createOrderQueue() {
+        Queue queue = new Queue("create.order.queue", true, false, false);
+        return queue;
+    }
+
+    /**
+     * Binds the order status verification queue to the exchange.
+     * The order status verification queue is bound to the "order-event-exchange."
+     *
+     * @return A Binding object defining the connection between the queue and the exchange.
+     */
+    @Bean
+    public Binding createOrderBinding() {
+        return new Binding("create.order.queue",
+                Binding.DestinationType.QUEUE,
+                "order-event-exchange",
+                "to.create.order",
+                null);
+    }
+
 }
