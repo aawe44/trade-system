@@ -244,18 +244,38 @@ public class PortalController {
         }
     }
 
-    @ResponseBody
-    @RequestMapping("/seckill/buy/{seckillId}")
-    public String seckillInfo(@PathVariable long seckillId) {
-        // Uncomment the appropriate line based on the seckill processing method
-        // boolean success = seckillActivityService.processSeckillReqBase(seckillId);
-        boolean success = seckillActivityService.processSeckill(seckillId);
+//    @ResponseBody
+//    @RequestMapping("/seckill/buy/{seckillId}")
+//    public String seckillInfo(@PathVariable long seckillId) {
+//        // Uncomment the appropriate line based on the seckill processing method
+//        // boolean success = seckillActivityService.processSeckillReqBase(seckillId);
+//        boolean success = seckillActivityService.processSeckill(seckillId);
+//
+//        if (success) {
+//            return "Seckill successful! Congratulations on your purchase!";
+//        } else {
+//            return "Seckill unsuccessful. The product is sold out.";
+//        }
+//    }
 
-        if (success) {
-            return "Seckill successful! Congratulations on your purchase!";
-        } else {
-            return "Seckill unsuccessful. The product is sold out.";
+    @ResponseBody
+    @RequestMapping("/seckill/buy/{userId}/{seckillId}")
+    public ModelAndView seckillInfo(@PathVariable long userId, @PathVariable long seckillId) {
+
+        ModelAndView modelAndView = new ModelAndView();
+        try {
+            Order order = seckillActivityService.processSeckill(userId, seckillId);
+            modelAndView.addObject("resultInfo", "秒杀抢购成功");
+            modelAndView.addObject("order", order);
+            modelAndView.setViewName("buy_result");
+
+        } catch (Exception e) {
+            modelAndView.addObject("errorInfo", e.getMessage());
+            modelAndView.setViewName("error");
         }
+
+        return modelAndView;
+
     }
 
 

@@ -28,6 +28,12 @@ public class OrderPayCheckReceiver {
         log.info("Received at: {} | Message: {}", LocalDateTime.now(), message);
 
         Order order = JSON.parseObject(message, Order.class);
+        /*
+         * 只处理普通商品订单
+         */
+        if (order.getActivityType() != 0) {
+            return;
+        }
 
         // 1. Query order information
         Order orderInfo = orderDao.queryOrderById(order.getId());

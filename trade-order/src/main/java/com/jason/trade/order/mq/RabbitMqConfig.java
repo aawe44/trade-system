@@ -108,4 +108,58 @@ public class RabbitMqConfig {
                 null);
     }
 
+
+    /**
+     * 秒杀订单支付成功消息
+     *
+     * @return
+     */
+    @Bean
+    public Queue seckillPaySucessQueue() {
+        Queue queue = new Queue("seckill.order.pay.success.queue", true, false, false);
+        return queue;
+    }
+
+    /**
+     * 秒杀订单支付成功 绑定
+     * 秒杀订单支付成功队列 绑定到交换机
+     *
+     * @return
+     */
+    @Bean
+    public Binding seckillPaySucessBinding() {
+        return new Binding("seckill.order.pay.success.queue",
+                Binding.DestinationType.QUEUE,
+                "order-event-exchange",
+                "seckill.order.pay.success",
+                null);
+    }
+
+
+    /**
+     * 秒杀订单支付状态检查消息
+     *
+     * @return
+     */
+    @Bean
+    public Queue seckillPayTimeOutCheQueue() {
+        Queue queue = new Queue("seckill.order.pay.status.check.queue", true, false, false);
+        return queue;
+    }
+
+    /**
+     * 秒杀订单支付超时 绑定
+     * 秒杀订单支付超时队列 绑定到交换机
+     *
+     * @return
+     */
+    @Bean
+    public Binding seckillPayTimeOutBinding() {
+        return new Binding("seckill.order.pay.status.check.queue",
+                Binding.DestinationType.QUEUE,
+                "order-event-exchange",
+                "order.pay.status.check",
+                null);
+    }
+
 }

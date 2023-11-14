@@ -30,6 +30,6 @@ public class LimitBuyTest {
 
     @Test
     public void removeLimitMemberTest() {
-        limitBuyService.removeLimitMember(2L, 123456L);
+        limitBuyService.removeLimitMember(9, 1234);
     }
 }

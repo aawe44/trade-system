@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.jason.trade.order.db.dao.OrderDao;
 import com.jason.trade.order.db.model.Order;
 
+import com.jason.trade.order.service.LimitBuyService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +19,9 @@ public class CreateOrderReceiver {
 
     @Autowired
     private OrderMessageSender orderMessageSender;
+
+    @Autowired
+    private LimitBuyService limitBuyService;
 
     /**
      * Handles messages related to order creation.
@@ -40,5 +44,11 @@ public class CreateOrderReceiver {
 
         // Step 2: Send a message to check the payment status of the order
         orderMessageSender.sendPayStatusCheckDelayMessage(JSON.toJSONString(order));
+
+        //3.判断如果是秒杀活动，加入限购名单
+        if (order.getActivityType() == 1) {
+            limitBuyService.addLimitMember(order.getActivityId(), order.getUserId());
+        }
+
     }
 }

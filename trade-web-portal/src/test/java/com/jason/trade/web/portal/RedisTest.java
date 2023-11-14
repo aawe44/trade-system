@@ -30,7 +30,7 @@ public class RedisTest {
     public void testSetStockInRedis() {
         // Test setting stock for a seckill activity in Redis
         // Format: stock:{seckillActivityId} -> stock value
-        redisWorker.setValue("stock:9", 10L);
+        redisWorker.setValue("stock:9", 1000L);
     }
 
     @Test

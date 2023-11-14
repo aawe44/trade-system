@@ -35,5 +35,14 @@ public class OrderMessageSender {
         amqpTemplate.convertAndSend("order-event-exchange", "to.create.order", message);
     }
 
+    /**
+     * 发送秒杀订单支付成功消息
+     * @param message
+     */
+    public void sendSeckillPaySucessMessage(String message) {
+        log.info("发送秒杀订单支付成功消息:{}", message);
+        amqpTemplate.convertAndSend("order-event-exchange", "seckill.order.pay.success", message);
+    }
+
 
 }

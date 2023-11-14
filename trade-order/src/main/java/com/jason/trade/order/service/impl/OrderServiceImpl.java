@@ -35,13 +35,14 @@ public class OrderServiceImpl implements OrderService {
 
     @Autowired
     private GoodsService goodsService;
+
     /**
      * Creates an order and locks the corresponding inventory in a single transaction,
      * ensuring either both succeed or both fail.
      * Utilizes @Transactional(rollbackFor = Exception.class).
      *
-     * @param userId   The ID of the user placing the order.
-     * @param goodsId  The ID of the product being ordered.
+     * @param userId  The ID of the user placing the order.
+     * @param goodsId The ID of the product being ordered.
      * @return The created Order object or null if unsuccessful.
      */
     @Transactional(rollbackFor = Exception.class)
@@ -126,11 +127,18 @@ public class OrderServiceImpl implements OrderService {
             throw new RuntimeException("Order payment status update failed");
         }
 
+
         //库存扣减
-        boolean deductResult = goodsService.deductStock(order.getGoodsId());
-        if (!deductResult) {
-            log.error("Order ID={} - Stock deduction failed", orderId);
-            throw new RuntimeException("Stock deduction failed");
+        if (order.getActivityType() == 0) {
+            //普通商品处理
+            boolean deductResult = goodsService.deductStock(order.getGoodsId());
+            if (!deductResult) {
+                log.error("Order ID={} - Stock deduction failed", orderId);
+                throw new RuntimeException("Stock deduction failed");
+            }
+        } else if (order.getActivityType() == 1) {
+            //秒杀活动处理,发送支付成功消息
+            orderMessageSender.sendSeckillPaySucessMessage(JSON.toJSONString(order));
         }
     }
 
