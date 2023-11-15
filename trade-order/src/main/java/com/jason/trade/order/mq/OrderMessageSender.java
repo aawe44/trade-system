@@ -36,11 +36,12 @@ public class OrderMessageSender {
     }
 
     /**
-     * 发送秒杀订单支付成功消息
-     * @param message
+     * Send a message for a successful payment of a seckill order.
+     *
+     * @param message The message to be sent.
      */
     public void sendSeckillPaySucessMessage(String message) {
-        log.info("发送秒杀订单支付成功消息:{}", message);
+        log.info("Sending seckill order payment success message:{}", message);
         amqpTemplate.convertAndSend("order-event-exchange", "seckill.order.pay.success", message);
     }
 

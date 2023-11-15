@@ -1,6 +1,7 @@
 package com.jason.trade.order.mq;
 
 import org.springframework.amqp.core.Binding;
+import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.Exchange;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.core.TopicExchange;
@@ -14,6 +15,15 @@ import java.util.HashMap;
  */
 @Configuration
 public class RabbitMqConfig {
+
+    private static final String ORDER_EVENT_EXCHANGE = "order-event-exchange";
+
+    private static final String SECKILL_ORDER_PAY_SUCCESS_QUEUE = "seckill.order.pay.success.queue";
+    private static final String SECKILL_ORDER_PAY_SUCCESS_BINDING_KEY = "seckill.order.pay.success";
+
+    private static final String SECKILL_ORDER_PAY_STATUS_CHECK_QUEUE = "seckill.order.pay.status.check.queue";
+    private static final String SECKILL_ORDER_PAY_STATUS_CHECK_BINDING_KEY = "order.pay.status.check";
+
 
     /**
      * Defines the order delay queue, which serves as a dead-letter queue for delayed orders.
@@ -108,57 +118,43 @@ public class RabbitMqConfig {
                 null);
     }
 
-
     /**
-     * 秒杀订单支付成功消息
-     *
-     * @return
+     * Configure the queue for successful seckill order payments.
      */
     @Bean
-    public Queue seckillPaySucessQueue() {
-        Queue queue = new Queue("seckill.order.pay.success.queue", true, false, false);
-        return queue;
+    public Queue seckillPaySuccessQueue() {
+        return new Queue(SECKILL_ORDER_PAY_SUCCESS_QUEUE, true, false, false);
     }
 
     /**
-     * 秒杀订单支付成功 绑定
-     * 秒杀订单支付成功队列 绑定到交换机
-     *
-     * @return
+     * Bind the successful seckill order payment queue to the exchange.
      */
     @Bean
     public Binding seckillPaySucessBinding() {
-        return new Binding("seckill.order.pay.success.queue",
+        return new Binding(SECKILL_ORDER_PAY_SUCCESS_QUEUE,
                 Binding.DestinationType.QUEUE,
-                "order-event-exchange",
-                "seckill.order.pay.success",
+                ORDER_EVENT_EXCHANGE,
+                SECKILL_ORDER_PAY_SUCCESS_BINDING_KEY,
                 null);
     }
 
-
     /**
-     * 秒杀订单支付状态检查消息
-     *
-     * @return
+     * Configure the queue for checking the payment status of seckill orders.
      */
     @Bean
-    public Queue seckillPayTimeOutCheQueue() {
-        Queue queue = new Queue("seckill.order.pay.status.check.queue", true, false, false);
-        return queue;
+    public Queue seckillPayStatusCheckQueue() {
+        return new Queue(SECKILL_ORDER_PAY_STATUS_CHECK_QUEUE, true, false, false);
     }
 
     /**
-     * 秒杀订单支付超时 绑定
-     * 秒杀订单支付超时队列 绑定到交换机
-     *
-     * @return
+     * Bind the seckill order payment status check queue to the exchange.
      */
     @Bean
     public Binding seckillPayTimeOutBinding() {
-        return new Binding("seckill.order.pay.status.check.queue",
+        return new Binding(SECKILL_ORDER_PAY_STATUS_CHECK_QUEUE,
                 Binding.DestinationType.QUEUE,
-                "order-event-exchange",
-                "order.pay.status.check",
+                ORDER_EVENT_EXCHANGE,
+                SECKILL_ORDER_PAY_STATUS_CHECK_BINDING_KEY,
                 null);
     }
 

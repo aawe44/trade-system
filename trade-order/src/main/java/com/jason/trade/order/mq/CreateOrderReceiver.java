@@ -45,7 +45,7 @@ public class CreateOrderReceiver {
         // Step 2: Send a message to check the payment status of the order
         orderMessageSender.sendPayStatusCheckDelayMessage(JSON.toJSONString(order));
 
-        //3.判断如果是秒杀活动，加入限购名单
+        //Step 3: Check if the order corresponds to a seckill activity and add the user to the limit buy list
         if (order.getActivityType() == 1) {
             limitBuyService.addLimitMember(order.getActivityId(), order.getUserId());
         }

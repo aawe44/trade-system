@@ -28,9 +28,8 @@ public class OrderPayCheckReceiver {
         log.info("Received at: {} | Message: {}", LocalDateTime.now(), message);
 
         Order order = JSON.parseObject(message, Order.class);
-        /*
-         * 只处理普通商品订单
-         */
+
+        //Only process orders for normal (non-special) products.
         if (order.getActivityType() != 0) {
             return;
         }
