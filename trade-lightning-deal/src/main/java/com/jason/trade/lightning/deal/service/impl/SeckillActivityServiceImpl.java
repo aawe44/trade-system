@@ -81,48 +81,65 @@ public class SeckillActivityServiceImpl implements SeckillActivityService {
     }
 
     /**
-     * Process seckill requests using Redis Lua script for inventory deduction validation.
+     * Process seckill requests using a Redis Lua script for inventory deduction validation.
      *
+     * @param userId            User ID
      * @param seckillActivityId Seckill activity ID
-     * @return Whether the operation was successful
+     * @return The created order if the operation was successful
+     * @throws RuntimeException If the user is not eligible, stock is insufficient, or other failures occur
      */
     @Override
     public Order processSeckill(long userId, long seckillActivityId) {
 
-        //1.校验用户是否有购买资格
+        // 1. Check if the user is eligible to purchase
         if (limitBuyService.isInLimitMember(seckillActivityId, userId)) {
-            log.error("当前用户已经购买过不能重复购买 seckillActivityId={} userId={}", seckillActivityId, userId);
-            throw new RuntimeException("当前用户已经购买过,不能重复购买");
+            log.error("User has already purchased and cannot buy again. seckillActivityId={} userId={}", seckillActivityId, userId);
+            throw new RuntimeException("User has already purchased and cannot buy again");
         }
 
-        //2.使用Redis中Lua先进行库存校验
-        String key = "stock:" + seckillActivityId;
-        boolean checkResult = redisWorker.stockDeductCheck(key);
-        if (!checkResult) {
-            log.error("库存不足 seckillActivityId={} userId={}", seckillActivityId, userId);
-            throw new RuntimeException("库存不足，抢购失败");
+        // 2. Use a Redis Lua script for inventory deduction validation
+        String stockKey = "stock:" + seckillActivityId;
+        boolean stockCheckResult = redisWorker.stockDeductCheck(stockKey);
+        if (!stockCheckResult) {
+            log.error("Insufficient stock. seckillActivityId={} userId={}", seckillActivityId, userId);
+            throw new RuntimeException("Insufficient stock, seckill failed");
         }
 
-        //3.查询对应的秒杀活动信息
+        // 3. Retrieve information for the corresponding seckill activity
         SeckillActivity seckillActivity = seckillActivityDao.querySeckillActivityById(seckillActivityId);
         if (seckillActivity == null) {
-            log.error("Seckill activity ID = {} not found for corresponding seckill activity", seckillActivityId);
+            log.error("Seckill activity not found for ID = {}", seckillActivityId);
             throw new RuntimeException("Unable to find corresponding seckill activity");
         }
 
-        //4.锁定库存
+        // 4. Lock the stock to prevent multiple purchases
         boolean lockStockResult = seckillActivityDao.lockStock(seckillActivityId);
         if (!lockStockResult) {
-            log.info("商品抢购失败，商品已经售完 seckillActivityId={} userId={}", seckillActivityId, userId);
-            throw new RuntimeException("商品抢购失败，商品已经售完");
+            log.info("Seckill failed, product sold out. seckillActivityId={} userId={}", seckillActivityId, userId);
+            throw new RuntimeException("Seckill failed, product sold out");
         }
-        log.info("商品抢购成功 seckillActivityId={} userId={}", seckillActivityId, userId);
+        log.info("Seckill successful. seckillActivityId={} userId={}", seckillActivityId, userId);
 
+        // 5. Create an order and send a message to create the order
+        Order order = buildOrder(userId, seckillActivity);
 
-        Order order = Order.builder()
+        // Send a message to create the order
+        orderMessageSender.sendCreateOrderMessage(JSON.toJSONString(order));
+        return order;
+    }
+
+    /**
+     * Build an Order based on seckill activity details.
+     *
+     * @param userId          User ID
+     * @param seckillActivity Seckill activity details
+     * @return The created order
+     */
+    private Order buildOrder(long userId, SeckillActivity seckillActivity) {
+        return Order.builder()
                 .id(snowFlake.nextId())
-                .activityId(seckillActivityId)
-                //type=1表示秒杀活动
+                .activityId(seckillActivity.getId())
+                // Type 1 indicates a seckill activity
                 .activityType(1)
                 .goodsId(seckillActivity.getGoodsId())
                 .payPrice(seckillActivity.getSeckillPrice())
@@ -130,30 +147,43 @@ public class SeckillActivityServiceImpl implements SeckillActivityService {
                 .status(OrderStatus.AWAITING_ORDER.getCode())
                 .createTime(new Date())
                 .build();
-
-        //5.创建订单，发送创建订单消息
-        orderMessageSender.sendCreateOrderMessage(JSON.toJSONString(order));
-        return order;
-
     }
 
+    /**
+     * Locks stock for a seckill activity.
+     *
+     * @param seckillActivityId Seckill activity ID
+     * @return True if the stock is successfully locked, false otherwise
+     */
     @Override
-    public boolean lockStock(long id) {
-        log.info("秒杀活动锁定库存 seckillActivityId:{}", id);
-        return seckillActivityDao.lockStock(id);
-
+    public boolean lockStock(long seckillActivityId) {
+        log.info("Locking stock for seckill activity. seckillActivityId: {}", seckillActivityId);
+        return seckillActivityDao.lockStock(seckillActivityId);
     }
 
+    /**
+     * Deducts stock for a seckill activity.
+     *
+     * @param seckillActivityId Seckill activity ID
+     * @return True if the stock is successfully deducted, false otherwise
+     */
     @Override
-    public boolean deductStock(long id) {
-        log.info("秒杀活动扣减库存 seckillActivityId:{}", id);
-        return seckillActivityDao.deductStock(id);
+    public boolean deductStock(long seckillActivityId) {
+        log.info("Deducting stock for seckill activity. seckillActivityId: {}", seckillActivityId);
+        return seckillActivityDao.deductStock(seckillActivityId);
     }
 
+    /**
+     * Reverts stock for a seckill activity.
+     *
+     * @param seckillActivityId Seckill activity ID
+     * @return True if the stock is successfully reverted, false otherwise
+     */
     @Override
-    public boolean revertStock(long id) {
-        log.info("秒杀活动回补库存 seckillActivityId:{}", id);
-        return seckillActivityDao.revertStock(id);
+    public boolean revertStock(long seckillActivityId) {
+        log.info("Reverting stock for seckill activity. seckillActivityId: {}", seckillActivityId);
+        return seckillActivityDao.revertStock(seckillActivityId);
     }
+
 
 }

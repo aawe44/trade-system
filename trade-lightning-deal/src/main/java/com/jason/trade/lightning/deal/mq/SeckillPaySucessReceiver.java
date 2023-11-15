@@ -15,11 +15,23 @@ public class SeckillPaySucessReceiver {
     @Autowired
     private SeckillActivityService seckillActivityService;
 
+    /**
+     * Handles messages for successful seckill payments.
+     *
+     * @param message The received message
+     */
     @RabbitListener(queues = "seckill.order.pay.success.queue")
     public void process(String message) {
-        log.info("秒杀支付成功消息处理，接收到消息内容:{}", message);
-        Order order = JSON.parseObject(message, Order.class);
-        //扣减库存
-        seckillActivityService.deductStock(order.getActivityId());
+        try {
+            log.info("Processing seckill payment success message: {}", message);
+            Order order = JSON.parseObject(message, Order.class);
+
+            // Deduct stock for the seckill activity
+            seckillActivityService.deductStock(order.getActivityId());
+
+            log.info("Seckill payment successful for order {}", order.getId());
+        } catch (Exception e) {
+            log.error("Error processing seckill payment success message: {}", e.getMessage(), e);
+        }
     }
 }

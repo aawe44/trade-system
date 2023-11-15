@@ -41,32 +41,36 @@ public class SeckillActivityDaoImpl implements SeckillActivityDao {
     @Override
     public boolean lockStock(long id) {
         int result = seckillActivityMapper.lockStock(id);
-        //大于0 表示插入成功
-        if (result < 0) {
-            log.error("锁定库存失败");
-            return false;
+        boolean success = result >= 0;
+
+        if (!success) {
+            log.error("Failed to lock stock for id: {}", id);
         }
-        return true;
+
+        return success;
     }
 
     @Override
     public boolean deductStock(long id) {
         int result = seckillActivityMapper.deductStock(id);
-        //大于0 表示插入成功
-        if (result < 1) {
-            log.error("扣减库存失败");
-            return false;
+        boolean success = result >= 1;
+
+        if (!success) {
+            log.error("Failed to deduct stock for id: {}", id);
         }
-        return true;
+
+        return success;
     }
 
     @Override
     public boolean revertStock(long id) {
         int result = seckillActivityMapper.revertStock(id);
-        if (result < 1) {
-            log.error("库存回补失败");
-            return false;
+        boolean success = result >= 1;
+
+        if (!success) {
+            log.error("Failed to revert stock for id: {}", id);
         }
-        return true;
+
+        return success;
     }
 }
