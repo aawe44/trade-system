@@ -9,6 +9,7 @@ import com.jason.trade.order.db.model.Order;
 import com.jason.trade.order.db.model.OrderStatus;
 import com.jason.trade.order.mq.OrderMessageSender;
 import com.jason.trade.order.service.OrderService;
+import com.jason.trade.order.service.RiskBlackListService;
 import com.jason.trade.order.utils.SnowflakeIdWorker;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +37,9 @@ public class OrderServiceImpl implements OrderService {
     @Autowired
     private GoodsService goodsService;
 
+    @Autowired
+    private RiskBlackListService riskBlackListService;
+
     /**
      * Creates an order and locks the corresponding inventory in a single transaction,
      * ensuring either both succeed or both fail.
@@ -48,7 +52,12 @@ public class OrderServiceImpl implements OrderService {
     @Transactional(rollbackFor = Exception.class)
     @Override
     public Order createOrder(long userId, long goodsId) {
-
+        //判断用户是否在黑名单中
+        boolean inRiskBlackListMember = riskBlackListService.isInRiskBlackListMember(userId);
+        if (inRiskBlackListMember) {
+            log.error("user is in risk black list can not buy userId={}", userId);
+            throw new RuntimeException("用户在黑名单中");
+        }
         // Build the order object with initial data.
         Order order = Order.builder()
                 .id(snowFlake.nextId())

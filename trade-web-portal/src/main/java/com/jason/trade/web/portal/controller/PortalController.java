@@ -127,7 +127,8 @@ public class PortalController {
             log.error("Failed to create an order. Error message: {}", e.getMessage());
 
             // Add an error message to the model to inform the user about the failure
-            modelAndView.addObject("resultInfo", "Order placement failed. Reason: " + e.getMessage());
+            modelAndView.addObject("errorInfo", "Order placement failed. Reason: " + e.getMessage());
+            modelAndView.setViewName("error");
         }
 
         // Return the ModelAndView, which will render the "buy_result" view with the appropriate data
