@@ -7,12 +7,14 @@ import com.jason.trade.goods.service.GoodsService;
 import com.jason.trade.goods.service.impl.SearchServiceImpl;
 import com.jason.trade.lightning.deal.db.model.SeckillActivity;
 import com.jason.trade.lightning.deal.service.SeckillActivityService;
+import com.jason.trade.lightning.deal.utils.RedisWorker;
 import com.jason.trade.order.db.model.Order;
 import com.jason.trade.order.service.OrderService;
 import com.jason.trade.web.portal.util.CommonUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -38,6 +40,8 @@ public class PortalController {
     @Autowired
     private SeckillActivityService seckillActivityService;
 
+    @Autowired
+    private RedisWorker redisWorker;
 
     /**
      * Display the goods_detail page.
@@ -192,30 +196,44 @@ public class PortalController {
     @RequestMapping("/seckill/{seckillId}")
     public String showSeckillInfo(Map<String, Object> resultMap, @PathVariable long seckillId) {
         try {
-            SeckillActivity seckillActivity = seckillActivityService.querySeckillActivityById(seckillId);
-
-            if (seckillActivity == null) {
-                log.error("Seckill activity not found for seckillId: {}", seckillId);
-                throw new RuntimeException("Seckill activity not found");
+            // 查询活动信息
+            SeckillActivity seckillActivity;
+            String seckillActivityInfo = redisWorker.getValueByKey("seckillActivity:" + seckillId);
+            if (!StringUtils.isEmpty(seckillActivityInfo)) {
+                //从redis查询到数据
+                seckillActivity = JSON.parseObject(seckillActivityInfo, SeckillActivity.class);
+                log.info("命中秒杀活动缓存:{}", seckillActivityInfo);
+            } else {
+                seckillActivity = seckillActivityService.querySeckillActivityById(seckillId);
             }
 
-            log.info("Seckill activity details: seckillId={}, seckillActivity={}", seckillId, JSON.toJSON(seckillActivity));
+            if (seckillActivity == null) {
+                log.error("秒杀的对应的活动信息 没有查询到 seckillId:{} ", seckillId);
+                throw new RuntimeException("秒杀的对应的活动信息 没有查询到");
+            }
+            log.info("seckillId={},seckillActivity={}", seckillId, JSON.toJSON(seckillActivity));
+            String seckillPrice = CommonUtils.changeF2Y(seckillActivity.getSeckillPrice());
+            String oldPrice = CommonUtils.changeF2Y(seckillActivity.getOldPrice());
 
-            String seckillPriceFormatted = CommonUtils.changeF2Y(seckillActivity.getSeckillPrice());
-            String oldPriceFormatted = CommonUtils.changeF2Y(seckillActivity.getOldPrice());
-
-            Goods goods = goodsService.queryGoodsById(seckillActivity.getGoodsId());
-
+            // 查询商品信息
+            Goods goods;
+            String goodsInfo = redisWorker.getValueByKey("seckillActivity_goods:" + seckillActivity.getGoodsId());
+            if (!StringUtils.isEmpty(goodsInfo)) {
+                //从redis查询到数据
+                goods = JSON.parseObject(goodsInfo, Goods.class);
+                log.info("命中商品缓存:{}", goodsInfo);
+            } else {
+                goods = goodsService.queryGoodsById(seckillActivity.getGoodsId());
+            }
             if (goods == null) {
-                log.error("Associated goods not found for seckillId: {}, goodsId: {}", seckillId, seckillActivity.getGoodsId());
-                throw new RuntimeException("Associated goods not found");
+                log.error("秒杀的对应的商品信息 没有查询到 seckillId:{} goodsId:{}", seckillId, seckillActivity.getGoodsId());
+                throw new RuntimeException("秒杀的对应的商品信息 没有查询到");
             }
 
             resultMap.put("seckillActivity", seckillActivity);
-            resultMap.put("seckillPrice", seckillPriceFormatted);
-            resultMap.put("oldPrice", oldPriceFormatted);
+            resultMap.put("seckillPrice", seckillPrice);
+            resultMap.put("oldPrice", oldPrice);
             resultMap.put("goods", goods);
-
             return "seckill_item";
         } catch (Exception e) {
             log.error("Failed to get seckill info details. Error message: {}", e.getMessage());

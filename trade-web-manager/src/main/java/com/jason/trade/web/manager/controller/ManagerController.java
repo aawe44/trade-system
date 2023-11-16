@@ -26,7 +26,6 @@ public class ManagerController {
     private SeckillActivityService seckillActivityService;
 
 
-
     @RequestMapping("/index")
     public String index() {
         return "index";
@@ -68,6 +67,7 @@ public class ManagerController {
         return "add_goods";
 
     }
+
     /**
      * Redirects to the page for adding a seckill activity.
      *
@@ -81,14 +81,14 @@ public class ManagerController {
     /**
      * Handles the action to add a new seckill activity.
      *
-     * @param activityName     The name of the seckill activity.
-     * @param goodsId          The ID of the associated goods.
-     * @param startTime        The start time of the seckill activity.
-     * @param endTime          The end time of the seckill activity.
-     * @param availableStock   The available stock for the seckill activity.
-     * @param seckillPrice     The seckill price.
-     * @param oldPrice         The original price.
-     * @param resultMap        A map for storing result data.
+     * @param activityName   The name of the seckill activity.
+     * @param goodsId        The ID of the associated goods.
+     * @param startTime      The start time of the seckill activity.
+     * @param endTime        The end time of the seckill activity.
+     * @param availableStock The available stock for the seckill activity.
+     * @param seckillPrice   The seckill price.
+     * @param oldPrice       The original price.
+     * @param resultMap      A map for storing result data.
      * @return The view name after adding the seckill activity.
      */
     @RequestMapping("/addSkillActivityAction")
@@ -128,6 +128,29 @@ public class ManagerController {
             log.error("Error while adding seckill activity", e);
             return "500"; // Consider a more appropriate error handling view or action
         }
+    }
+
+    /**
+     * 跳转到推送缓存预热页面
+     *
+     * @return
+     */
+    @RequestMapping("/pushSeckillCache")
+    public String pushSeckillCache() {
+        return "push_seckill_cache";
+    }
+
+    /**
+     * 将对应的秒杀活动信息写入缓存中
+     *
+     * @param seckillId
+     * @return
+     */
+    @RequestMapping("/pushSeckillCacheAction")
+    public String pushSkilCache(@RequestParam("seckillId") long seckillId) {
+        //将秒杀库存写入缓存中
+        seckillActivityService.pushSeckillActivityInfoToCache(seckillId);
+        return "push_seckill_cache";
     }
 
 
