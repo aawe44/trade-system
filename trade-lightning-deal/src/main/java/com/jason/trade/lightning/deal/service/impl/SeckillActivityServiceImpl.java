@@ -193,13 +193,13 @@ public class SeckillActivityServiceImpl implements SeckillActivityService {
     @Override
     public void pushSeckillActivityInfoToCache(long id) {
         SeckillActivity seckillActivity = seckillActivityDao.querySeckillActivityById(id);
-        //库存信息
+        // Stock information
         redisWorker.setValue("stock:" + id, Long.valueOf(seckillActivity.getAvailableStock()));
 
-        //活动完整信息
+        // Complete activity information
         redisWorker.setValue("seckillActivity:" + seckillActivity.getId(), JSON.toJSONString(seckillActivity));
 
-        //活动对应的商品信息
+        // Information about the goods associated with the activity
         Goods goods = goodsService.queryGoodsById(seckillActivity.getGoodsId());
         redisWorker.setValue("seckillActivity_goods:" + seckillActivity.getGoodsId(), JSON.toJSONString(goods));
     }

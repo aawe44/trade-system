@@ -29,7 +29,7 @@ public class SeckillActivityServiceTest {
     @Test
     public void pushSeckillActivityInfoToCacheTest() {
         // Test setup
-        long seckillActivityId = 9L;
+        long seckillActivityId = 8L;
 
         // Use the updated variable name
         System.out.println(redisWorker.getValueByKey("stock:" + seckillActivityId));

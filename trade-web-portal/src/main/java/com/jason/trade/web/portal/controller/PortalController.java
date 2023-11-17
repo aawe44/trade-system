@@ -197,49 +197,69 @@ public class PortalController {
     @RequestMapping("/seckill/{seckillId}")
     public String showSeckillInfo(Map<String, Object> resultMap, @PathVariable long seckillId) {
         try {
-            // 查询活动信息
-            SeckillActivity seckillActivity;
-            String seckillActivityInfo = redisWorker.getValueByKey("seckillActivity:" + seckillId);
-            if (!StringUtils.isEmpty(seckillActivityInfo)) {
-                //从redis查询到数据
-                seckillActivity = JSON.parseObject(seckillActivityInfo, SeckillActivity.class);
-                log.info("命中秒杀活动缓存:{}", seckillActivityInfo);
-            } else {
-                seckillActivity = seckillActivityService.querySeckillActivityById(seckillId);
-            }
+            // Retrieve seckill activity information
+            SeckillActivity seckillActivity = getSeckillActivity(seckillId);
 
             if (seckillActivity == null) {
-                log.error("秒杀的对应的活动信息 没有查询到 seckillId:{} ", seckillId);
-                throw new RuntimeException("秒杀的对应的活动信息 没有查询到");
+                log.error("Failed to find seckill activity information for seckillId: {}", seckillId);
+                throw new RuntimeException("Failed to find seckill activity information");
             }
-            log.info("seckillId={},seckillActivity={}", seckillId, JSON.toJSON(seckillActivity));
+
+            log.info("Seckill details - seckillId: {}, seckillActivity: {}", seckillId, JSON.toJSON(seckillActivity));
+
+            // Format prices
             String seckillPrice = CommonUtils.changeF2Y(seckillActivity.getSeckillPrice());
             String oldPrice = CommonUtils.changeF2Y(seckillActivity.getOldPrice());
 
-            // 查询商品信息
-            Goods goods;
-            String goodsInfo = redisWorker.getValueByKey("seckillActivity_goods:" + seckillActivity.getGoodsId());
-            if (!StringUtils.isEmpty(goodsInfo)) {
-                //从redis查询到数据
-                goods = JSON.parseObject(goodsInfo, Goods.class);
-                log.info("命中商品缓存:{}", goodsInfo);
-            } else {
-                goods = goodsService.queryGoodsById(seckillActivity.getGoodsId());
-            }
+            // Retrieve goods information
+            Goods goods = getGoods(seckillActivity.getGoodsId());
+
             if (goods == null) {
-                log.error("秒杀的对应的商品信息 没有查询到 seckillId:{} goodsId:{}", seckillId, seckillActivity.getGoodsId());
-                throw new RuntimeException("秒杀的对应的商品信息 没有查询到");
+                log.error("Failed to find goods information for seckillId: {}, goodsId: {}", seckillId, seckillActivity.getGoodsId());
+                throw new RuntimeException("Failed to find goods information");
             }
 
+            // Populate resultMap with relevant information
             resultMap.put("seckillActivity", seckillActivity);
             resultMap.put("seckillPrice", seckillPrice);
             resultMap.put("oldPrice", oldPrice);
             resultMap.put("goods", goods);
+
             return "seckill_item";
         } catch (Exception e) {
             log.error("Failed to get seckill info details. Error message: {}", e.getMessage());
             resultMap.put("errorInfo", e.getMessage());
             return "error";
+        }
+    }
+
+    // Helper method to retrieve seckill activity information from cache or database
+    private SeckillActivity getSeckillActivity(long seckillId) {
+        String seckillActivityInfo = redisWorker.getValueByKey("seckillActivity:" + seckillId);
+        if (!StringUtils.isEmpty(seckillActivityInfo)) {
+            // Cache hit
+            SeckillActivity seckillActivity = JSON.parseObject(seckillActivityInfo, SeckillActivity.class);
+            log.info("Cache hit for seckill activity: {}", seckillActivityInfo);
+            return seckillActivity;
+        } else {
+            // Cache miss, query from the database
+            log.info("Cache miss for seckill activity, querying from the database. seckillId: {}", seckillId);
+            return seckillActivityService.querySeckillActivityById(seckillId);
+        }
+    }
+
+    // Helper method to retrieve goods information from cache or database
+    private Goods getGoods(long goodsId) {
+        String goodsInfo = redisWorker.getValueByKey("seckillActivity_goods:" + goodsId);
+        if (!StringUtils.isEmpty(goodsInfo)) {
+            // Cache hit
+            Goods goods = JSON.parseObject(goodsInfo, Goods.class);
+            log.info("Cache hit for goods: {}", goodsInfo);
+            return goods;
+        } else {
+            // Cache miss, query from the database
+            log.info("Cache miss for goods, querying from the database. goodsId: {}", goodsId);
+            return goodsService.queryGoodsById(goodsId);
         }
     }
 

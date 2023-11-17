@@ -131,9 +131,9 @@ public class ManagerController {
     }
 
     /**
-     * 跳转到推送缓存预热页面
+     * Redirect to the page for pushing and preheating seckill cache.
      *
-     * @return
+     * @return The view name for the push seckill cache page.
      */
     @RequestMapping("/pushSeckillCache")
     public String pushSeckillCache() {
@@ -141,14 +141,14 @@ public class ManagerController {
     }
 
     /**
-     * 将对应的秒杀活动信息写入缓存中
+     * Write corresponding seckill activity information into the cache.
      *
-     * @param seckillId
-     * @return
+     * @param seckillId The ID of the seckill activity.
+     * @return The view name for the push seckill cache page.
      */
     @RequestMapping("/pushSeckillCacheAction")
     public String pushSkilCache(@RequestParam("seckillId") long seckillId) {
-        //将秒杀库存写入缓存中
+        // Write seckill stock information into the cache
         seckillActivityService.pushSeckillActivityInfoToCache(seckillId);
         return "push_seckill_cache";
     }
