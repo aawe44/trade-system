@@ -13,43 +13,40 @@ public class RiskBlackListService {
     private JedisPool jedisPool;
 
     /**
-     * 添加风控黑名单
-     * redis sadd 命令将一个或多个成员元素加入到集合中，已经存在于集合的成员元素将被忽略
+     * Adds a user to the risk black list.
      *
-     * @param userId
+     * @param userId The ID of the user to be added to the risk black list.
      */
     public void addRiskBlackListMember(long userId) {
         Jedis jedisClient = jedisPool.getResource();
         jedisClient.sadd("risk_black_list_members", String.valueOf(userId));
         jedisClient.close();
-        log.info("添加风控黑名单 userId:{}", userId);
+        log.info("Added user to the risk black list. userId: {}", userId);
     }
 
     /**
-     * 移除风控黑名单
-     * redis srem 命令用于移除集合中的一个或多个成员元素，不存在的成员元素会被忽略
+     * Removes a user from the risk black list.
      *
-     * @param userId
+     * @param userId The ID of the user to be removed from the risk black list.
      */
     public void removeRiskBlackListMember(long userId) {
         Jedis jedisClient = jedisPool.getResource();
         jedisClient.srem("risk_black_list_members", String.valueOf(userId));
         jedisClient.close();
-        log.info("移除风控黑名单 userId:{}", userId);
+        log.info("Removed user from the risk black list. userId: {}", userId);
     }
 
     /**
-     * 判断是否风控黑名单中
-     * redis sismember 命令判断成员元素是否是集合的成员
+     * Checks if a user is in the risk black list.
      *
-     * @param userId
-     * @return
+     * @param userId The ID of the user to be checked.
+     * @return True if the user is in the risk black list, false otherwise.
      */
     public boolean isInRiskBlackListMember(long userId) {
         Jedis jedisClient = jedisPool.getResource();
         boolean sismember = jedisClient.sismember("risk_black_list_members", String.valueOf(userId));
         jedisClient.close();
-        log.info("是否在风控黑名单:{}  userId:{}", sismember, userId);
+        log.info("User is{} in the risk black list. userId: {}", sismember ? "" : " not", userId);
         return sismember;
     }
 }

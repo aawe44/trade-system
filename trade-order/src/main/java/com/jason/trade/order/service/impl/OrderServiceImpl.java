@@ -52,11 +52,11 @@ public class OrderServiceImpl implements OrderService {
     @Transactional(rollbackFor = Exception.class)
     @Override
     public Order createOrder(long userId, long goodsId) {
-        //判断用户是否在黑名单中
+        // Check if the user is in the risk black list
         boolean inRiskBlackListMember = riskBlackListService.isInRiskBlackListMember(userId);
         if (inRiskBlackListMember) {
             log.error("user is in risk black list can not buy userId={}", userId);
-            throw new RuntimeException("用户在黑名单中");
+            throw new RuntimeException("User is in the risk black list.");
         }
         // Build the order object with initial data.
         Order order = Order.builder()
