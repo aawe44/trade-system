@@ -317,5 +317,22 @@ public class PortalController {
 
     }
 
+    /**
+     * 秒杀活动详情页
+     *
+     * @param seckillId
+     * @return
+     */
+    @RequestMapping("/seckill/static/{seckillId}")
+    public String seckillInfo(@PathVariable long seckillId) {
+        long startTime = System.nanoTime();
+        try {
+            return "seckill_item_" + seckillId;
+        } finally {
+            long endTime = System.nanoTime();
+            log.info("static method process time {}", endTime - startTime);
+        }
+    }
+
 
 }
