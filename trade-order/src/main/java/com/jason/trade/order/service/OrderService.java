@@ -9,24 +9,32 @@ public interface OrderService {
     /**
      * Creates an order for a given user and product.
      *
-     * @param userId   The ID of the user placing the order.
-     * @param goodsId  The ID of the product being ordered.
-     * @return         The created Order object representing the new order.
+     * @param userId  The ID of the user placing the order.
+     * @param goodsId The ID of the product being ordered.
+     * @return The created Order object representing the new order.
      */
     Order createOrder(long userId, long goodsId);
 
     /**
      * Retrieves an order by its unique ID.
      *
-     * @param orderId  The unique ID of the order to retrieve.
-     * @return         The Order object representing the retrieved order.
+     * @param orderId The unique ID of the order to retrieve.
+     * @return The Order object representing the retrieved order.
      */
     Order queryOrder(long orderId);
 
     /**
      * Processes the payment for an order with the given ID.
      *
-     * @param orderId  The unique ID of the order to be paid for.
+     * @param orderId The unique ID of the order to be paid for.
      */
     void payOrder(long orderId);
+
+    /**
+     * 修改对应的订单信息
+     *
+     * @param order
+     * @return
+     */
+    boolean updateOrder(Order order);
 }

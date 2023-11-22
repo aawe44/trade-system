@@ -1,7 +1,7 @@
 package com.jason.trade.order.mq;
 
 import com.alibaba.fastjson.JSON;
-import com.jason.trade.goods.service.GoodsService;
+import com.jason.trade.order.client.GoodsFeignClient;
 import com.jason.trade.order.db.dao.OrderDao;
 import com.jason.trade.order.db.model.Order;
 import com.jason.trade.order.db.model.OrderStatus;
@@ -20,7 +20,7 @@ public class OrderPayCheckReceiver {
     private OrderDao orderDao;
 
     @Autowired
-    private GoodsService goodsService;
+    private GoodsFeignClient goodsFeignClient;
 
     @RabbitListener(queues = "order.pay.status.check.queue")
     public void process(String message) {
@@ -47,7 +47,7 @@ public class OrderPayCheckReceiver {
             orderDao.updateOrder(orderInfo);
 
             // 4. Revert the locked stock
-            goodsService.revertStock(orderInfo.getGoodsId());
+            goodsFeignClient.revertStock(orderInfo.getGoodsId());
 
         }
     }

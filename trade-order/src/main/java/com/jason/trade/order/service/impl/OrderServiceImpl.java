@@ -1,9 +1,9 @@
 package com.jason.trade.order.service.impl;
 
 import com.alibaba.fastjson.JSON;
-import com.jason.trade.goods.db.dao.GoodsDao;
-import com.jason.trade.goods.db.model.Goods;
-import com.jason.trade.goods.service.GoodsService;
+
+import com.jason.trade.order.client.GoodsFeignClient;
+import com.jason.trade.order.client.model.Goods;
 import com.jason.trade.order.db.dao.OrderDao;
 import com.jason.trade.order.db.model.Order;
 import com.jason.trade.order.db.model.OrderStatus;
@@ -26,16 +26,15 @@ public class OrderServiceImpl implements OrderService {
     @Autowired
     private OrderDao orderDao;
 
+
     @Autowired
-    private GoodsDao goodsDao;
+    private GoodsFeignClient goodsFeignClient;
 
     private SnowflakeIdWorker snowFlake = new SnowflakeIdWorker(6, 8);
 
     @Autowired
     private OrderMessageSender orderMessageSender;
 
-    @Autowired
-    private GoodsService goodsService;
 
     @Autowired
     private RiskBlackListService riskBlackListService;
@@ -71,7 +70,7 @@ public class OrderServiceImpl implements OrderService {
 
         // 1. Check if the product exists.
         // Retrieve product information from the goods service.
-        Goods goods = goodsDao.queryGoodsById(goodsId);
+        Goods goods = goodsFeignClient.queryGoodsById(goodsId);
 
         if (goods == null) {
             log.error("Goods is null, goodsId={}, userId={}", goodsId, userId);
@@ -84,7 +83,7 @@ public class OrderServiceImpl implements OrderService {
         }
 
         // Attempt to lock the product's stock.
-        boolean lockResult = goodsService.lockStock(goodsId);
+        boolean lockResult = goodsFeignClient.lockStock(goodsId);
         if (!lockResult) {
             log.error("Order stock lock error. Order: {}", JSON.toJSONString(order));
             throw new RuntimeException("Failed to lock product inventory for the order");
@@ -140,7 +139,7 @@ public class OrderServiceImpl implements OrderService {
         //库存扣减
         if (order.getActivityType() == 0) {
             //普通商品处理
-            boolean deductResult = goodsService.deductStock(order.getGoodsId());
+            boolean deductResult = goodsFeignClient.deductStock(order.getGoodsId());
             if (!deductResult) {
                 log.error("Order ID={} - Stock deduction failed", orderId);
                 throw new RuntimeException("Stock deduction failed");
@@ -151,4 +150,9 @@ public class OrderServiceImpl implements OrderService {
         }
     }
 
+
+    @Override
+    public boolean updateOrder(Order order) {
+        return orderDao.updateOrder(order);
+    }
 }

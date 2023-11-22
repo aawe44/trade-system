@@ -1,10 +1,9 @@
 package com.jason.trade.order.mq;
 
 import com.alibaba.fastjson.JSON;
+import com.jason.trade.common.service.LimitBuyService;
 import com.jason.trade.order.db.dao.OrderDao;
 import com.jason.trade.order.db.model.Order;
-
-import com.jason.trade.order.service.LimitBuyService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
