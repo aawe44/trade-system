@@ -1,6 +1,7 @@
 package com.jason.trade.web.portal;
 
-import com.jason.trade.lightning.deal.utils.RedisWorker;
+
+import com.jason.trade.common.utils.RedisWorker;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
