@@ -1,10 +1,10 @@
 package com.jason.trade.lightning.deal.mq;
 
 import com.alibaba.fastjson.JSON;
+import com.jason.trade.common.service.LimitBuyService;
+import com.jason.trade.lightning.deal.client.OrderFeignClient;
+import com.jason.trade.lightning.deal.client.model.Order;
 import com.jason.trade.lightning.deal.service.SeckillActivityService;
-import com.jason.trade.order.db.dao.OrderDao;
-import com.jason.trade.order.db.model.Order;
-import com.jason.trade.order.service.LimitBuyService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +21,7 @@ public class SeckillPayTimeOutReceiver {
     private LimitBuyService limitBuyService;
 
     @Autowired
-    private OrderDao orderDao;
+    private OrderFeignClient orderFeignClient;
 
     /**
      * Handles messages for seckill payment timeout.
@@ -42,7 +42,7 @@ public class SeckillPayTimeOutReceiver {
             }
 
             // Retrieve order information from the database
-            Order existingOrder = orderDao.queryOrderById(receivedOrder.getId());
+            Order existingOrder = orderFeignClient.queryOrderById(receivedOrder.getId());
 
             // Check if the order status is 'waiting for payment'
             if (existingOrder.getStatus() == 1) {
@@ -56,7 +56,7 @@ public class SeckillPayTimeOutReceiver {
 
                 // 3. Update the order status to closed
                 existingOrder.setStatus(99);
-                orderDao.updateOrder(existingOrder);
+                orderFeignClient.updateOrder(existingOrder);
             }
 
         } catch (Exception e) {

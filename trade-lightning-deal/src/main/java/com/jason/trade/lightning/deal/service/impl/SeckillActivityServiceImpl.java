@@ -1,20 +1,20 @@
 package com.jason.trade.lightning.deal.service.impl;
 
 import com.alibaba.fastjson.JSON;
-import com.jason.trade.goods.db.model.Goods;
-import com.jason.trade.goods.service.GoodsService;
+import com.jason.trade.common.service.LimitBuyService;
+import com.jason.trade.common.utils.SnowflakeIdWorker;
+import com.jason.trade.common.utils.RedisWorker;
+import com.jason.trade.lightning.deal.client.GoodsFeignClient;
+import com.jason.trade.lightning.deal.client.model.Goods;
+import com.jason.trade.lightning.deal.client.model.Order;
 import com.jason.trade.lightning.deal.db.dao.SeckillActivityDao;
 import com.jason.trade.lightning.deal.db.model.SeckillActivity;
+import com.jason.trade.lightning.deal.mq.OrderMessageSender;
 import com.jason.trade.lightning.deal.service.SeckillActivityService;
-import com.jason.trade.order.db.model.Order;
-import com.jason.trade.order.db.model.OrderStatus;
-import com.jason.trade.order.mq.OrderMessageSender;
-import com.jason.trade.order.utils.SnowflakeIdWorker;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import com.jason.trade.lightning.deal.utils.RedisWorker;
-import com.jason.trade.order.service.LimitBuyService;
+
 
 import java.util.Date;
 import java.util.List;
@@ -37,7 +37,7 @@ public class SeckillActivityServiceImpl implements SeckillActivityService {
     private OrderMessageSender orderMessageSender;
 
     @Autowired
-    private GoodsService goodsService;
+    private GoodsFeignClient goodsFeignClient;
 
     @Override
     public boolean insertSeckillActivity(SeckillActivity seckillActivity) {
@@ -149,7 +149,7 @@ public class SeckillActivityServiceImpl implements SeckillActivityService {
                 .goodsId(seckillActivity.getGoodsId())
                 .payPrice(seckillActivity.getSeckillPrice())
                 .userId(userId)
-                .status(OrderStatus.AWAITING_ORDER.getCode())
+                .status(1)
                 .createTime(new Date())
                 .build();
     }
@@ -200,7 +200,7 @@ public class SeckillActivityServiceImpl implements SeckillActivityService {
         redisWorker.setValue("seckillActivity:" + seckillActivity.getId(), JSON.toJSONString(seckillActivity));
 
         // Information about the goods associated with the activity
-        Goods goods = goodsService.queryGoodsById(seckillActivity.getGoodsId());
+        Goods goods = goodsFeignClient.queryGoodsById(seckillActivity.getGoodsId());
         redisWorker.setValue("seckillActivity_goods:" + seckillActivity.getGoodsId(), JSON.toJSONString(goods));
     }
 }

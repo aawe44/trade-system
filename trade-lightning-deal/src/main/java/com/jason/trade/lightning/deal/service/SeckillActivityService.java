@@ -1,7 +1,8 @@
 package com.jason.trade.lightning.deal.service;
 
+import com.jason.trade.lightning.deal.client.model.Order;
 import com.jason.trade.lightning.deal.db.model.SeckillActivity;
-import com.jason.trade.order.db.model.Order;
+
 
 import java.util.List;
 
