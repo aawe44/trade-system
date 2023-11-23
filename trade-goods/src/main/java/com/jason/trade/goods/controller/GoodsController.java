@@ -7,10 +7,7 @@ import com.jason.trade.goods.service.SearchService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -34,7 +31,7 @@ public class GoodsController {
      * @param goods
      * @return
      */
-    @GetMapping("/goods/insertGoods")
+    @PostMapping("/goods/insertGoods")
     @ResponseBody
     public boolean insertGoods(@RequestBody Goods goods) {
         log.info("insertGoods goods:{}", JSON.toJSON(goods));

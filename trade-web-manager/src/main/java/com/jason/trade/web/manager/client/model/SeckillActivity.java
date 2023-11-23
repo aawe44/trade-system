@@ -1,4 +1,4 @@
-package com.jason.trade.lightning.deal.db.model;
+package com.jason.trade.web.manager.client.model;
 
 import java.util.Date;
 

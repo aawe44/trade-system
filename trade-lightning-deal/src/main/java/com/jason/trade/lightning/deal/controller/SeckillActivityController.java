@@ -9,6 +9,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.List;
@@ -26,12 +28,13 @@ public class SeckillActivityController {
      * @param seckillActivity
      * @return
      */
-    @GetMapping("/seckill/insertSeckillActivity")
+    @PostMapping("/seckill/insertSeckillActivity")
     @ResponseBody
-    public boolean insertSeckillActivity(SeckillActivity seckillActivity) {
+    public boolean insertSeckillActivity(@RequestBody SeckillActivity seckillActivity) {
         log.info("insertSeckillActivity seckillActivity:{}", JSON.toJSON(seckillActivity));
         return seckillActivityService.insertSeckillActivity(seckillActivity);
     }
+
 
     /**
      * 查询秒杀活动
