@@ -71,6 +71,19 @@ public class PortalController {
         return modelAndView;
     }
 
+    @RequestMapping("/goods/{goodsId}/{userId}")
+    public ModelAndView itemPage(@PathVariable long goodsId, @PathVariable long userId) {
+        Goods goods = goodsFeignClient.queryGoodsById(goodsId);
+        log.info("goodsId={},goods={}", goodsId, JSON.toJSON(goods));
+        String showPrice = CommonUtils.changeF2Y(goods.getPrice());
+        ModelAndView modelAndView = new ModelAndView();
+        modelAndView.addObject("goods", goods);
+        modelAndView.addObject("showPrice", showPrice);
+        modelAndView.addObject("userId", userId);
+        modelAndView.setViewName("goods_detail_with_userId");
+        return modelAndView;
+    }
+
 
     /**
      * Display the search page.
@@ -260,6 +273,46 @@ public class PortalController {
             // Cache miss, query from the database
             log.info("Cache miss for goods, querying from the database. goodsId: {}", goodsId);
             return goodsFeignClient.queryGoodsById(goodsId);
+        }
+    }
+
+    @RequestMapping("/seckill/{seckillId}/{userId}")
+    public String showSeckillInfoWithUserid(Map<String, Object> resultMap, @PathVariable long seckillId, @PathVariable long userId) {
+        try {
+            // Retrieve seckill activity information
+            SeckillActivity seckillActivity = getSeckillActivity(seckillId);
+
+            if (seckillActivity == null) {
+                log.error("Failed to find seckill activity information for seckillId: {}", seckillId);
+                throw new RuntimeException("Failed to find seckill activity information");
+            }
+
+            log.info("Seckill details - seckillId: {}, seckillActivity: {}", seckillId, JSON.toJSON(seckillActivity));
+
+            // Format prices
+            String seckillPrice = CommonUtils.changeF2Y(seckillActivity.getSeckillPrice());
+            String oldPrice = CommonUtils.changeF2Y(seckillActivity.getOldPrice());
+
+            // Retrieve goods information
+            Goods goods = getGoods(seckillActivity.getGoodsId());
+
+            if (goods == null) {
+                log.error("Failed to find goods information for seckillId: {}, goodsId: {}", seckillId, seckillActivity.getGoodsId());
+                throw new RuntimeException("Failed to find goods information");
+            }
+
+            // Populate resultMap with relevant information
+            resultMap.put("seckillActivity", seckillActivity);
+            resultMap.put("seckillPrice", seckillPrice);
+            resultMap.put("oldPrice", oldPrice);
+            resultMap.put("goods", goods);
+            resultMap.put("userId", userId);
+
+            return "seckill_item_with_userId";
+        } catch (Exception e) {
+            log.error("Failed to get seckill info details. Error message: {}", e.getMessage());
+            resultMap.put("errorInfo", e.getMessage());
+            return "error";
         }
     }
 
