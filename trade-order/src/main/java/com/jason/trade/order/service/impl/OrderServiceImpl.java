@@ -58,15 +58,18 @@ public class OrderServiceImpl implements OrderService {
             throw new RuntimeException("User is in the risk black list.");
         }
         // Build the order object with initial data.
-        Order order = Order.builder()
-                .id(snowFlake.nextId())
-                .activityId(0L)
-                .activityType(0)
-                .goodsId(goodsId)
-                .userId(userId)
-                .status(OrderStatus.AWAITING_ORDER.getCode())
-                .createTime(new Date())
-                .build();
+        Order order = new Order();
+        //普通商品购买默认无活动
+        order.setId(snowFlake.nextId());
+        order.setActivityId(0L);
+        order.setActivityType(0);
+        order.setGoodsId(goodsId);
+        order.setUserId(userId);
+        /*
+         * 状态:0,没有可用库存订单创建失败;1,已创建，等待付款;2 已支付,等待发货;99 订单关闭，超时未付款
+         */
+        order.setStatus(1);
+        order.setCreateTime(new Date());
 
         // 1. Check if the product exists.
         // Retrieve product information from the goods service.
