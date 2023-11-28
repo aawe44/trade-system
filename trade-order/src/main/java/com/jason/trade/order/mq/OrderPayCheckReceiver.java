@@ -24,31 +24,40 @@ public class OrderPayCheckReceiver {
 
     @RabbitListener(queues = "order.pay.status.check.queue")
     public void process(String message) {
-        // Log the time of reception and the message content
-        log.info("Received at: {} | Message: {}", LocalDateTime.now(), message);
 
-        Order order = JSON.parseObject(message, Order.class);
+        try {
+            // Log the time of reception and the message content
+            log.info("Received at: {} | Message: {}", LocalDateTime.now(), message);
 
-        //Only process orders for normal (non-special) products.
-        if (order.getActivityType() != 0) {
-            return;
+            Order order = JSON.parseObject(message, Order.class);
+
+            //Only process orders for normal (non-special) products.
+            if (order.getActivityType() != 0) {
+                return;
+            }
+
+            // 1. Query order information
+            Order orderInfo = orderDao.queryOrderById(order.getId());
+
+            // 2. Check if the order is awaiting payment
+            if (orderInfo.getStatus() == OrderStatus.AWAITING_ORDER.getCode()) {
+
+                log.info("Order {} is closed due to timeout.", order.getId());
+
+                // 3. Update the order status to "CLOSED"
+                orderInfo.setStatus(OrderStatus.ORDER_CLOSED_TIMEOUT.getCode());
+                orderDao.updateOrder(orderInfo);
+
+                // 4. Revert the locked stock
+                goodsFeignClient.revertStock(orderInfo.getGoodsId());
+
+            }
+
+        } catch (Exception e) {
+            log.error("Error message:{}", e.getMessage());
+            throw new RuntimeException();
         }
 
-        // 1. Query order information
-        Order orderInfo = orderDao.queryOrderById(order.getId());
 
-        // 2. Check if the order is awaiting payment
-        if (orderInfo.getStatus() == OrderStatus.AWAITING_ORDER.getCode()) {
-
-            log.info("Order {} is closed due to timeout.", order.getId());
-
-            // 3. Update the order status to "CLOSED"
-            orderInfo.setStatus(OrderStatus.ORDER_CLOSED_TIMEOUT.getCode());
-            orderDao.updateOrder(orderInfo);
-
-            // 4. Revert the locked stock
-            goodsFeignClient.revertStock(orderInfo.getGoodsId());
-
-        }
     }
 }
