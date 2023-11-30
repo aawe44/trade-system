@@ -11,6 +11,8 @@ import com.jason.trade.web.portal.client.model.Goods;
 import com.jason.trade.web.portal.client.model.Order;
 import com.jason.trade.web.portal.client.model.SeckillActivity;
 import com.jason.trade.web.portal.util.CommonUtils;
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixProperty;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -336,20 +338,11 @@ public class PortalController {
         }
     }
 
-//    @ResponseBody
-//    @RequestMapping("/seckill/buy/{seckillId}")
-//    public String seckillInfo(@PathVariable long seckillId) {
-//        // Uncomment the appropriate line based on the seckill processing method
-//        // boolean success = seckillActivityService.processSeckillReqBase(seckillId);
-//        boolean success = seckillActivityService.processSeckill(seckillId);
-//
-//        if (success) {
-//            return "Seckill successful! Congratulations on your purchase!";
-//        } else {
-//            return "Seckill unsuccessful. The product is sold out.";
-//        }
-//    }
 
+    @HystrixCommand(fallbackMethod = "fallback", commandProperties = {
+            @HystrixProperty(name = "execution.isolation.strategy", value = "SEMAPHORE"),  //开启信号量隔离策略
+            @HystrixProperty(name = "execution.isolation.semaphore.maxConcurrentRequests", value = "1")//设置信号量隔离允许的最大并发数，默认为10
+    })
     @ResponseBody
     @RequestMapping("/seckill/buy/{userId}/{seckillId}")
     public ModelAndView seckillInfo(@PathVariable long userId, @PathVariable long seckillId) {
@@ -389,6 +382,22 @@ public class PortalController {
             long endTime = System.nanoTime();
             log.info("static method process time {}", endTime - startTime);
         }
+    }
+
+
+    /**
+     * 被限流时执行的fallback
+     *
+     * @param userId
+     * @param seckillId
+     * @return
+     */
+    public ModelAndView fallback(long userId, long seckillId) {
+        log.info("触发限流 fallback");
+        ModelAndView modelAndView = new ModelAndView();
+        modelAndView.addObject("errorInfo", "请稍后再试,触发限流");
+        modelAndView.setViewName("error");
+        return modelAndView;
     }
 
 
